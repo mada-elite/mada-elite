@@ -125,6 +125,7 @@ label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5
 @media(max-width:700px){.side{display:none}.cards{grid-template-columns:1fr}.formgrid,.two-col{grid-template-columns:1fr}.main{padding:14px}}
 .letterhead-contact{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:7px 8px 8px;border-top:1px solid var(--line);border-bottom:2px solid var(--gold);font-size:9px;color:#39414d;direction:rtl}.letterhead-contact span{white-space:nowrap}.letterhead-contact b{font-weight:700}.doc-letterhead{margin-bottom:10px}.doc-letterhead .doc-top{margin-bottom:0}
 .company-export{direction:rtl;background:#fff;color:#111;min-height:100vh;padding:12mm;font-family:Tahoma,Arial,sans-serif}.company-export .doc-letterhead{margin-bottom:8mm}.passport-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8mm}.passport-card{border:1px solid #ddd;border-radius:10px;padding:5mm;break-inside:avoid;background:#fff}.passport-card img{display:block;width:100%;max-height:95mm;object-fit:contain;margin-top:4mm;border:1px solid #eee}.passport-note{line-height:1.8}@media print{.company-export{padding:10mm}.passport-grid{grid-template-columns:repeat(2,1fr)}.passport-card{break-inside:avoid}.company-export .sec-title,.company-export .sec-box{break-inside:avoid}}
+.supplier-note{margin-top:18px;padding:12px;border:1px solid #d8c9a4;background:#fbf7ec;border-radius:10px;font-size:12px;color:#4b4337}
 </style>
 </head>
 <body>
@@ -364,7 +365,8 @@ label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5
   <div id="detailsBody"></div>
   <div class="modalfoot">
     <button class="gold" onclick="openPartnerModal()">+ إضافة شريك</button>
-    <button class="secondary" onclick="exportCompanyPDF()">📄 طباعة / حفظ PDF</button>
+    <button class="secondary" onclick="exportCompanyPDF()">📄 ملف الشركة الكامل</button>
+    <button class="secondary" onclick="exportSupplierPDF()">📤 إرسال للمورد</button>
     <button class="secondary" onclick="printCompanyDetails()">طباعة</button>
     <button class="secondary" onclick="closeModal('detailsModal')">إغلاق</button>
   </div>
@@ -934,6 +936,30 @@ function exportCompanyPDF(){
   setTimeout(()=>{document.title=oldTitle},1000);
 }
 
+function exportSupplierPDF(){
+  if(!requirePermission('companies','view'))return;
+  const c=data.companies.find(x=>x.id===selectedCompanyId);
+  if(!c){toast('اختر شركة أولاً');return}
+  const ps=c.partners||[];
+  const total=ps.reduce((sum,p)=>sum+Number(p.share||0),0);
+  const partnerRows=ps.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name||'')}</td><td>${esc(p.nationality||'—')}</td><td class="ltr">${esc(p.passport||'—')}</td><td class="ltr">${esc(p.phone||'—')}</td><td class="ltr">${esc(p.email||'—')}</td><td>${esc(p.address||'—')}</td><td>${esc(p.expiry||'—')}</td><td>${esc(p.share??0)}%</td></tr>`).join('');
+  const passports=ps.map(passportBlock).join('');
+  const html=`<div class="company-export">${docHeader()}<div class="doc-title-bar">ملف بيانات الشركة للمورد</div>
+    <div class="doc-meta"><span>رقم الطلب: <b class="ltr">${esc(c.orderNo||'—')}</b></span><span>تاريخ الملف: <b>${fmtDate(new Date().toISOString().slice(0,10))}</b></span></div>
+    <div class="sec-title">1. بيانات الشركة</div><div class="sec-box"><table class="info-table">
+      <tr><th>اسم الشركة</th><td>${esc(c.name||'—')}</td><th>المجموعة</th><td>${esc(c.group||'—')}</td></tr>
+      <tr><th>السجل التجاري</th><td class="ltr">${esc(c.cr||'غير مسجل')}</td><th>النشاط</th><td>${esc(c.activity||'—')}</td></tr>
+      <tr><th>العنوان</th><td colspan="3">${esc(c.address||'—')}</td></tr>
+      <tr><th>الجوال</th><td class="ltr">${esc(c.phone||'—')}</td><th>البريد</th><td class="ltr">${esc(c.email||'—')}</td></tr></table></div>
+    <div class="sec-title">2. الشركاء</div><div class="sec-box"><table class="partner-table"><thead><tr><th>#</th><th>الاسم</th><th>الجنسية</th><th>الجواز</th><th>الجوال</th><th>البريد</th><th>العنوان</th><th>انتهاء الجواز</th><th>النسبة</th></tr></thead><tbody>${partnerRows||'<tr><td colspan="9">لا يوجد شركاء</td></tr>'}</tbody></table><p style="margin-top:8px;font-weight:800">مجموع نسب الشراكة: ${total}%</p></div>
+    ${passports?`<div class="sec-title">3. صور جوازات الشركاء</div><div class="passport-grid">${passports}</div>`:''}
+    <div class="supplier-note">هذا الملف مخصص لتزويد المورد ببيانات الشركة والشركاء والجوازات فقط. لا يتضمن القسم المالي أو الموظفين والصلاحيات أو المستندات الداخلية أو أي أسعار شراء مرجعية.</div>
+    ${docFooter()}</div>`;
+  document.getElementById('printArea').innerHTML=html;
+  const oldTitle=document.title; document.title='MADA ELITE - بيانات المورد - '+(c.name||'شركة');
+  window.print();
+  setTimeout(()=>{document.title=oldTitle},1000);
+}
 function closeModal(id){document.getElementById(id).classList.remove("show")}
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("show")}));
 
