@@ -640,128 +640,106 @@ function openPartnerModal(pid){
 function handleFile(e){const f=e.target.files[0];if(!f){tempFile="";return}if(f.size>2*1024*1024){alert("الملف أكبر من 2 ميجا");e.target.value="";return}const r=new FileReader();r.onload=()=>{tempFile=r.result};r.readAsDataURL(f)}
 function setPassportOcrStatus(msg,ok=false){const el=document.getElementById("passportOcrStatus");if(el){el.textContent=msg;el.style.color=ok?"#168a4b":"#7c8490"}}
 async function loadTesseract(){if(window.Tesseract)return window.Tesseract;if(window.__madaTesseractPromise)return window.__madaTesseractPromise;window.__madaTesseractPromise=new Promise((resolve,reject)=>{const sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";sc.onload=()=>resolve(window.Tesseract);sc.onerror=()=>reject(new Error("تعذر تحميل محرك قراءة الجواز"));document.head.appendChild(sc)});return window.__madaTesseractPromise}
+const MRZ_COUNTRY_CODES=new Set("ABW,AFG,AGO,AIA,ALA,ALB,AND,ARE,ARG,ARM,ASM,ATA,ATF,ATG,AUS,AUT,AZE,BDI,BEL,BEN,BES,BFA,BGD,BGR,BHR,BHS,BIH,BLM,BLR,BLZ,BMU,BOL,BRA,BRB,BRN,BTN,BVT,BWA,CAF,CAN,CCK,CHE,CHL,CHN,CIV,CMR,COD,COG,COK,COL,COM,CPV,CRI,CUB,CUW,CXR,CYM,CYP,CZE,DEU,DJI,DMA,DNK,DOM,DZA,ECU,EGY,ERI,ESH,ESP,EST,ETH,FIN,FJI,FLK,FRA,FRO,FSM,GAB,GBR,GEO,GGY,GHA,GIB,GIN,GLP,GMB,GNB,GNQ,GRC,GRD,GRL,GTM,GUF,GUM,GUY,HKG,HMD,HND,HRV,HTI,HUN,IDN,IMN,IND,IOT,IRL,IRN,IRQ,ISL,ISR,ITA,JAM,JEY,JOR,JPN,KAZ,KEN,KGZ,KHM,KIR,KNA,KOR,KWT,LAO,LBN,LBR,LBY,LCA,LIE,LKA,LSO,LTU,LUX,LVA,MAC,MAF,MAR,MCO,MDA,MDG,MDV,MEX,MHL,MKD,MLI,MLT,MMR,MNE,MNG,MNP,MOZ,MRT,MSR,MTQ,MUS,MWI,MYS,MYT,NAM,NCL,NER,NFK,NGA,NIC,NIU,NLD,NOR,NPL,NRU,NZL,OMN,PAK,PAN,PCN,PER,PHL,PLW,PNG,POL,PRI,PRK,PRT,PRY,PSE,PYF,QAT,REU,ROU,RUS,RWA,SAU,SDN,SEN,SGP,SGS,SHN,SJM,SLB,SLE,SLV,SMR,SOM,SPM,SRB,SSD,STP,SUR,SVK,SVN,SWE,SWZ,SXM,SYC,SYR,TCA,TCD,TGO,THA,TJK,TKL,TKM,TLS,TON,TTO,TUN,TUR,TUV,TWN,TZA,UGA,UKR,UMI,URY,USA,UZB,VAT,VCT,VEN,VGB,VIR,VNM,VUT,WLF,WSM,YEM,ZAF,ZMB,ZWE".split(","));
 function normalizeMrzLine(x){
-  return String(x||"").toUpperCase()
-    .replace(/[«»]/g,"<")
-    .replace(/[^A-Z0-9<]/g,"");
+  return String(x||"").toUpperCase().replace(/[«»]/g,"<").replace(/\s+/g,"<").replace(/[^A-Z0-9<]/g,"");
 }
 function mrzCheckDigit(value){
-  const weights=[7,3,1]; let sum=0;
+  const weights=[7,3,1];let sum=0;
   for(let i=0;i<String(value||"").length;i++){
-    const ch=String(value)[i];
-    let v=0;
+    const ch=String(value)[i];let v=0;
     if(ch>="0"&&ch<="9")v=+ch;
     else if(ch>="A"&&ch<="Z")v=ch.charCodeAt(0)-55;
-    else if(ch==="<")v=0;
-    else return -1;
+    else if(ch==="<")v=0;else return -1;
     sum+=v*weights[i%3];
   }
   return sum%10;
 }
-function fixMrzNumeric(s){
-  return String(s||"").replace(/[OoQ]/g,"0").replace(/[Il|]/g,"1").replace(/Z/g,"2").replace(/S/g,"5").replace(/G/g,"6").replace(/T/g,"7").replace(/B/g,"8");
-}
-function parsePassportMRZ(text){
-  const raw=String(text||"").toUpperCase().replace(/[«»]/g,"<");
-  const rawLines=raw.split(/\r?\n/).map(x=>normalizeMrzLine(x)).filter(x=>x.length>=18);
-  const candidates=rawLines.slice();
-  const compact=rawLines.join("");
-  if(compact) for(let i=0;i<compact.length;i++){
-    const tail=compact.slice(i);
-    if(/^P[A-Z0-9<]{1,4}/.test(tail)) candidates.push(tail.slice(0,44));
+function solveMrzField(raw,check,numeric=false){
+  const s=String(raw||"").toUpperCase();
+  if(!/^\d$/.test(String(check||"")))return null;
+  const target=+check;
+  if(mrzCheckDigit(s)===target)return s;
+  const map=numeric?{"O":["0"],"Q":["0"],"D":["0"],"I":["1"],"L":["1"],"Z":["2"],"S":["5"],"G":["6"],"T":["7"],"B":["8"]}:{"O":["O","0"],"Q":["Q","0"],"I":["I","1"],"L":["L","1"],"Z":["Z","2"],"S":["S","5"],"G":["G","6"],"T":["T","7"],"B":["B","8"]};
+  let states=[""];
+  for(const ch of s){
+    const opts=map[ch]||[ch];const next=[];
+    for(const base of states)for(const op of opts)next.push(base+op);
+    states=next.slice(0,500);
   }
-  let l1=null,l2=null,best=-1;
-  for(let i=0;i<candidates.length;i++){
-    const a=candidates[i];
-    if(!/^P[A-Z0-9<]{2,4}/.test(a)||a.length<30)continue;
-    const score=(a.includes("<<")?5:0)+(a.length>=40?2:0)+(a.length===44?3:0);
-    for(let j=0;j<candidates.length;j++){
-      if(i===j)continue;
-      const b=candidates[j];
-      if(b.length<30||!/^[A-Z0-9<]{20,44}$/.test(b))continue;
-      let sc=score+(b.length===44?4:0);
-      const nat=b.slice(10,13);
-      if(/^[A-Z]{3}$/.test(nat))sc+=5;
-      const exp=fixMrzNumeric(b.slice(21,27));
-      if(/^\d{6}$/.test(exp))sc+=4;
-      const passport=b.slice(0,9).replace(/</g,"");
-      if(passport.length>=5)sc+=2;
-      if(sc>best){best=sc;l1=a;l2=b}
+  return states.find(x=>mrzCheckDigit(x)===target)||null;
+}
+function parsePassportMRZ(linesInput){
+  const lines=(Array.isArray(linesInput)?linesInput:[String(linesInput||"")])
+    .flatMap(x=>String(x||"").split(/\r?\n/))
+    .map(normalizeMrzLine).filter(x=>x.length>=25);
+  const l1s=lines.filter(x=>/^P[A-Z0-9<]{1,3}/.test(x)&&x.length>=34).sort((a,b)=>Math.abs(a.length-44)-Math.abs(b.length-44));
+  const l2s=lines.filter(x=>x.length>=34&&/^[A-Z0-9<]{20,50}$/.test(x)).sort((a,b)=>Math.abs(a.length-44)-Math.abs(b.length-44));
+  let best=null,bestScore=-Infinity;
+  for(const l1raw of l1s.slice(0,8)){
+    for(const l2raw of l2s.slice(0,12)){
+      if(l1raw===l2raw)continue;
+      const l1=l1raw.length>=44?l1raw.slice(0,44):l1raw;
+      const l2=l2raw.length>=44?l2raw.slice(0,44):l2raw;
+      if(l1.length<40||l2.length<40)continue;
+      let score=0;
+      if(l1.length===44)score+=6;if(l2.length===44)score+=8;if(l1.includes("<<"))score+=5;
+      const nat=l2.slice(10,13);if(MRZ_COUNTRY_CODES.has(nat))score+=12;
+      const passport=solveMrzField(l2.slice(0,9),l2[9],false);
+      const birth=solveMrzField(l2.slice(13,19),l2[19],true);
+      const expiry=solveMrzField(l2.slice(21,27),l2[27],true);
+      if(passport)score+=12;if(birth)score+=4;if(expiry)score+=12;
+      if(score>bestScore)best={l1,l2,nat,passport,birth,expiry,score};
     }
   }
-  if(!l1||!l2)return null;
-  // If OCR shortened the lines, use only fields whose positions are reliable.
-  const namePart=l1.slice(5).replace(/<+/g," ").trim();
+  if(!best||best.score<22)return null;
+  const namePart=best.l1.slice(5).replace(/<+/g," ").trim();
   const names=namePart.split(" ").filter(Boolean);
-  const surname=(names.shift()||"").replace(/[^A-Z' -]/g,"");
+  const surname=(names.shift()||"").replace(/[^A-Z' -]/g,"").trim();
   const given=names.join(" ").replace(/[^A-Z' -]/g,"").trim();
-  const passport=fixMrzNumeric(l2.slice(0,9)).replace(/</g,"").trim();
-  const nationalityRaw=l2.slice(10,13).replace(/[^A-Z]/g,"");
-  const nationality=/^[A-Z]{3}$/.test(nationalityRaw)?nationalityRaw:"";
-  const expiryRaw=fixMrzNumeric(l2.slice(21,27)).replace(/</g,"");
-  let expiry="";
-  if(/^\d{6}$/.test(expiryRaw)){
-    const yy=+expiryRaw.slice(0,2),mm=+expiryRaw.slice(2,4),dd=+expiryRaw.slice(4,6);
-    const year=yy+2000;
-    if(mm>=1&&mm<=12&&dd>=1&&dd<=31)expiry=String(year).padStart(4,"0")+"-"+String(mm).padStart(2,"0")+"-"+String(dd).padStart(2,"0");
-  }
   const name=[given,surname].filter(Boolean).join(" ").trim();
-  if(!name&&!passport)return null;
-  return {name,passport,nationality,expiry,mrz1:l1,mrz2:l2};
+  let expiry="";
+  if(best.expiry&&/^\d{6}$/.test(best.expiry)){
+    const yy=+best.expiry.slice(0,2),mm=+best.expiry.slice(2,4),dd=+best.expiry.slice(4,6);
+    if(mm>=1&&mm<=12&&dd>=1&&dd<=31)expiry=(yy+2000)+"-"+String(mm).padStart(2,"0")+"-"+String(dd).padStart(2,"0");
+  }
+  if(!best.passport&&!name)return null;
+  return {name,passport:best.passport||"",nationality:MRZ_COUNTRY_CODES.has(best.nat)?best.nat:"",expiry,mrz1:best.l1,mrz2:best.l2,score:best.score};
 }
 async function makePassportOCRImage(file,mode="bottom"){
-  const bmp=await createImageBitmap(file);
-  const srcW=bmp.width,srcH=bmp.height;
-  const y=mode==="bottom"?Math.floor(srcH*.48):0;
-  const cropH=mode==="bottom"?srcH-y:srcH;
-  const scale=Math.max(2,Math.min(4,2400/srcW));
-  const canvas=document.createElement("canvas");
+  const bmp=await createImageBitmap(file);const srcW=bmp.width,srcH=bmp.height;
+  const y=mode==="bottom"?Math.floor(srcH*.45):0;const cropH=mode==="bottom"?srcH-y:srcH;
+  const scale=Math.max(2,Math.min(4,2600/srcW));const canvas=document.createElement("canvas");
   canvas.width=Math.round(srcW*scale);canvas.height=Math.round(cropH*scale);
-  const ctx=canvas.getContext("2d",{willReadFrequently:true});
-  ctx.drawImage(bmp,0,y,srcW,cropH,0,0,canvas.width,canvas.height);
+  const ctx=canvas.getContext("2d",{willReadFrequently:true});ctx.drawImage(bmp,0,y,srcW,cropH,0,0,canvas.width,canvas.height);
   const image=ctx.getImageData(0,0,canvas.width,canvas.height);
-  for(let i=0;i<image.data.length;i+=4){
-    const g=image.data[i]*.299+image.data[i+1]*.587+image.data[i+2]*.114;
-    const v=g>155?255:g<105?0:g;
-    image.data[i]=image.data[i+1]=image.data[i+2]=v;
-  }
-  ctx.putImageData(image,0,0);
-  return canvas;
+  for(let i=0;i<image.data.length;i+=4){const g=image.data[i]*.299+image.data[i+1]*.587+image.data[i+2]*.114;const v=g>160?255:g<100?0:g;image.data[i]=image.data[i+1]=image.data[i+2]=v;}
+  ctx.putImageData(image,0,0);return canvas;
 }
 async function readPassportOCR(file){
   if(!file||!file.type.startsWith("image/")){setPassportOcrStatus("للقراءة التلقائية استخدم صورة واضحة للجواز.");return}
-  setPassportOcrStatus("جاري تحليل منطقة MRZ في الجواز...");
+  setPassportOcrStatus("جاري التحقق من MRZ بدقة...");
   let worker=null;
   try{
-    const T=await loadTesseract();
-    worker=await T.createWorker("eng");
-    if(worker.setParameters)await worker.setParameters({
-      tessedit_char_whitelist:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<",
-      preserve_interword_spaces:"1"
-    });
-    const canvases=[await makePassportOCRImage(file,"bottom"),await makePassportOCRImage(file,"full")];
-    let allText="";
+    const T=await loadTesseract();worker=await T.createWorker("eng");
+    if(worker.setParameters)await worker.setParameters({tessedit_char_whitelist:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<",preserve_interword_spaces:"1"});
+    const canvases=[await makePassportOCRImage(file,"bottom"),await makePassportOCRImage(file,"full")];const allLines=[];
     for(const canvas of canvases){
-      const result=await worker.recognize(canvas);
-      allText+="\n"+(result?.data?.text||"");
+      for(const psm of ["6","7","13"]){
+        try{
+          if(worker.setParameters)await worker.setParameters({tessedit_pageseg_mode:psm});
+          const result=await worker.recognize(canvas);
+          const lines=(result?.data?.lines||[]).map(x=>x.text||"");if(lines.length)allLines.push(...lines);else allLines.push(result?.data?.text||"");
+        }catch{}
+      }
     }
-    const parsed=parsePassportMRZ(allText);
-    if(!parsed){
-      setPassportOcrStatus("لم أتعرف على MRZ بشكل موثوق. جرّب صورة مستقيمة وواضحة يظهر فيها أسفل صفحة الجواز.");
-      return;
-    }
-    if(parsed.name)pName.value=parsed.name;
-    if(parsed.passport)pPassport.value=parsed.passport;
-    if(parsed.nationality)pNationality.value=parsed.nationality;
-    if(parsed.expiry)pExpiry.value=parsed.expiry;
+    const parsed=parsePassportMRZ(allLines);
+    if(!parsed){setPassportOcrStatus("لم يتم العثور على MRZ موثوقة. تأكد أن السطران السفليان للجواز واضحان وكاملان.");return}
+    if(parsed.name)pName.value=parsed.name;if(parsed.passport)pPassport.value=parsed.passport;if(parsed.nationality)pNationality.value=parsed.nationality;if(parsed.expiry)pExpiry.value=parsed.expiry;
     const filled=[parsed.name&&"الاسم",parsed.passport&&"رقم الجواز",parsed.nationality&&"الجنسية",parsed.expiry&&"الانتهاء"].filter(Boolean).join("، ");
-    setPassportOcrStatus("تم استخراج: "+filled+" — راجع البيانات قبل الحفظ.",true);
-  }catch(err){
-    console.error(err);
-    setPassportOcrStatus("تعذر تشغيل قراءة الجواز. يمكنك إدخال البيانات يدويًا.");
-  }finally{
-    if(worker)try{await worker.terminate()}catch{}
-  }
+    setPassportOcrStatus("تم التحقق من: "+filled+" — راجع البيانات قبل الحفظ.",true);
+  }catch(err){console.error(err);setPassportOcrStatus("تعذر تشغيل قراءة الجواز. يمكنك إدخال البيانات يدويًا.");}
+  finally{if(worker)try{await worker.terminate()}catch{}}
 }
 function handlePassportSelected(e){handleFile(e);const f=e.target.files[0];if(f)readPassportOCR(f)}
 function savePartner(){
