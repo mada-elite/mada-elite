@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MADA ELITE — مادا إيليت | إدارة الشركات والشركاء</title>
+<style>
+:root{
+  --gold:#b88a2a; --gold2:#d4a84b; --dark:#0f1520; --dark2:#161e2b;
+  --cream:#f7f2e7; --line:#e7dfcf; --green:#18a558; --red:#d83b3b;
+  --muted:#7c8490; --card:#fff; --bg:#f3f0ea;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Tahoma,Arial,"Segoe UI",sans-serif;background:var(--bg);color:#172033;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;border:0}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd6c8;border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus{outline:2px solid #d4b56a55;border-color:var(--gold)}
+label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5568}
+.app{display:flex;min-height:100vh}
+.side{width:270px;background:linear-gradient(180deg,var(--dark),var(--dark2));color:#fff;padding:18px 12px;flex-shrink:0;display:flex;flex-direction:column}
+.brand{text-align:center;padding:8px 8px 16px;border-bottom:1px solid #26303a;margin-bottom:12px}
+.brand img{width:72px;height:72px;object-fit:contain;margin:0 auto 6px;display:block;border-radius:8px}
+.brand h1{font-size:16px;font-weight:800}
+.brand small{display:block;color:var(--gold2);font-size:10px;margin-top:3px;line-height:1.4}
+.nav{display:flex;flex-direction:column;gap:8px;flex:1}
+.nav button{width:100%;text-align:right;background:transparent;color:#c5cdd6;padding:20px 18px;border-radius:12px;font-size:19px;min-height:62px;font-weight:700}
+.nav button.active,.nav button:hover{background:var(--gold);color:#fff}
+.side-foot{padding-top:12px;border-top:1px solid #26303a;margin-top:10px}
+.side-foot button{width:100%;text-align:right;background:transparent;color:#8a93a0;padding:10px 14px;border-radius:8px;font-size:13px}
+.side-foot button:hover{color:#fff;background:#ffffff10}
+.main{flex:1;padding:22px;min-width:0;overflow:auto}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.search{flex:1;min-width:180px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gold{background:var(--gold);color:#fff;padding:11px 18px;border-radius:9px;font-weight:bold}
+.gold:hover{background:#a07824}
+.secondary{background:#efe9dc;color:#5f4b24;padding:10px 13px;border-radius:8px}
+.secondary:hover{background:#e5dcc8}
+.mini{background:#f2eee5;padding:7px 11px;border-radius:7px;font-size:13px}
+.mini:hover{background:#e8e2d4}
+.danger{background:#fce9e9;color:#b32121}
+.danger:hover{background:#f5d5d5}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.card,.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 15px #00000008}
+.card .metric{font-size:28px;font-weight:800;margin-top:6px;color:var(--dark)}
+.muted{color:var(--muted);font-size:13px}
+.panel h2{margin:0 0 14px;font-size:17px}
+.toolbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.tablewrap{overflow:auto}
+.table{width:100%;border-collapse:collapse;min-width:640px}
+.table th,.table td{padding:11px 9px;border-bottom:1px solid #eee;text-align:right;font-size:13.5px}
+.table th{background:#f5efe2;font-size:12.5px;color:#5a5040}
+.table tr:hover td{background:#faf8f4}
+.status{display:inline-block;padding:4px 10px;border-radius:20px;background:#e5f7ed;color:#168a4b;font-size:12px}
+.status.warn{background:#fff3e0;color:#c67a00}
+.status.bad{background:#fce9e9;color:#b32121}
+.field{margin-bottom:12px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formgrid .full{grid-column:1/-1}
+.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.show{display:flex}
+.modalbox{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:22px;box-shadow:0 20px 60px #0004}
+.modalbox h2{margin-bottom:14px;font-size:18px}
+.modalfoot{display:flex;gap:10px;justify-content:flex-start;margin-top:16px;flex-wrap:wrap}
+.toast{position:fixed;bottom:22px;left:22px;background:#111;color:#fff;padding:12px 18px;border-radius:10px;display:none;z-index:200;font-size:14px;box-shadow:0 8px 24px #0005}
+.toast.show{display:block;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.partner-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin:6px 0;background:#fffaf5;gap:8px;flex-wrap:wrap}
+.partner-row .info{flex:1;min-width:140px}
+.doc-row{display:flex;justify-content:space-between;align-items:center;padding:12px;border:1px solid rgba(184,145,57,.25);border-radius:12px;margin:8px 0;background:#fffaf0;gap:8px;flex-wrap:wrap}
+.empty{padding:36px;text-align:center;color:#999}
+.syncstatus{font-size:12px;padding:7px 10px;border-radius:8px;background:#f4f1ea;color:#6b5a35}
+.syncok{background:#e6f7ee;color:#168a4b}
+.syncbad{background:#fce9e9;color:#a52222}
+.clientPage{min-height:100vh;background:linear-gradient(135deg,#f8f3e8,#fff);display:flex;align-items:center;justify-content:center;padding:20px}
+.clientCard{width:min(640px,100%);background:#fff;border:1px solid #e5dccb;border-radius:20px;box-shadow:0 20px 60px #0001;padding:28px}
+.print-area{display:none}
+.page{display:none}
+.page.active{display:block}
+.ltr{direction:ltr;text-align:left;unicode-bidi:embed}
+
+/* Official document styles matching MADA ELITE templates */
+.doc-sheet{width:100%;max-width:210mm;margin:0 auto;background:#fffcf7;border:1px solid #e5d7b7;padding:0;direction:rtl;font-family:Tahoma,Arial,sans-serif;color:#1a1a1a;position:relative;overflow:hidden}
+.doc-inner{padding:14mm 12mm 12mm;position:relative;z-index:1}
+.doc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:12px}
+.doc-top .logo-side{text-align:center}
+.doc-top .logo-side img{width:70px;height:70px;object-fit:contain}
+.doc-top .logo-side .co{font-size:14px;font-weight:900;color:#8b6914;letter-spacing:1px}
+.doc-top .logo-side .sub{font-size:8px;color:#a08040;letter-spacing:2px}
+.doc-top .slogan{text-align:left;font-size:11px;color:#5a5040;line-height:1.5}
+.doc-top .slogan b{display:block;font-size:12px;color:#8b6914}
+.doc-title-bar{background:linear-gradient(90deg,#c9a227,#e8c96a,#c9a227);color:#3d2e0a;text-align:center;padding:8px 12px;border-radius:20px;font-weight:800;font-size:15px;margin:10px 0;box-shadow:0 2px 8px #c9a22733}
+.doc-meta{display:flex;justify-content:space-between;border:1px solid #e0c98a;border-radius:8px;padding:6px 12px;font-size:12px;background:#fff;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.sec-title{background:linear-gradient(90deg,#e8d5a3,#f5ead7);color:#6b4e12;font-weight:800;padding:6px 12px;border-radius:6px 6px 0 0;font-size:13px;border:1px solid #e0c98a;border-bottom:0}
+.sec-box{border:1px solid #e0c98a;border-radius:0 0 6px 6px;background:#fff;margin-bottom:10px;overflow:hidden}
+.sec-box table{width:100%;border-collapse:collapse;font-size:11.5px}
+.sec-box th,.sec-box td{padding:6px 8px;border-bottom:1px solid #f0e6d0;text-align:right}
+.sec-box th{background:#faf6ee;color:#6b5a35;font-weight:700;width:35%}
+.sec-box tr:last-child td,.sec-box tr:last-child th{border-bottom:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.clause{font-size:11px;line-height:1.7;padding:8px 10px;background:#fff;border:1px solid #e0c98a;border-radius:6px;margin-bottom:8px}
+.clause b{color:#8b6914}
+.sigs{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
+.sig-box{flex:1;border:1px solid #e0c98a;border-radius:8px;padding:10px;min-height:85px;font-size:11px;background:#fffcf7}
+.sig-box b{color:#8b6914;display:block;margin-bottom:6px}
+.doc-footer{margin-top:12px;padding-top:8px;border-top:1px solid #e0c98a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:9.5px;color:#6b5a35}
+.doc-footer .contact span{display:inline-block;margin-left:10px}
+.bank-row{display:flex;align-items:center;gap:10px;padding:8px;background:#f8f4ec;border-radius:6px;font-size:11px;flex-wrap:wrap}
+.bank-row .iban{font-weight:800;direction:ltr;letter-spacing:.5px}
+.hl{background:#f5ead7;font-weight:800}
+.partner-table{width:100%;border-collapse:collapse;font-size:11px}
+.partner-table th,.partner-table td{border:1px solid #e0c98a;padding:5px 6px;text-align:center}
+.partner-table th{background:#e8d5a3;color:#5a4010}
+
+@media print{
+  body *{visibility:hidden!important}
+  .print-area,.print-area *{visibility:visible!important}
+  .print-area{display:block!important;position:fixed;inset:0;background:#fff;z-index:9999;padding:0;margin:0}
+  .no-print{display:none!important}
+  .doc-sheet{border:0;max-width:none;width:210mm}
+  @page{size:A4;margin:8mm}
+}
+@media(max-width:1050px){.cards{grid-template-columns:repeat(2,1fr)}.side{width:200px}}
+@media(max-width:700px){.side{display:none}.cards{grid-template-columns:1fr}.formgrid,.two-col{grid-template-columns:1fr}.main{padding:14px}}
+.letterhead-contact{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:7px 8px 8px;border-top:1px solid var(--line);border-bottom:2px solid var(--gold);font-size:9px;color:#39414d;direction:rtl}.letterhead-contact span{white-space:nowrap}.letterhead-contact b{font-weight:700}.doc-letterhead{margin-bottom:10px}.doc-letterhead .doc-top{margin-bottom:0}
+.company-export{direction:rtl;background:#fff;color:#111;min-height:100vh;padding:12mm;font-family:Tahoma,Arial,sans-serif}.company-export .doc-letterhead{margin-bottom:8mm}.passport-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8mm}.passport-card{border:1px solid #ddd;border-radius:10px;padding:5mm;break-inside:avoid;background:#fff}.passport-card img{display:block;width:100%;max-height:95mm;object-fit:contain;margin-top:4mm;border:1px solid #eee}.passport-note{line-height:1.8}@media print{.company-export{padding:10mm}.passport-grid{grid-template-columns:repeat(2,1fr)}.passport-card{break-inside:avoid}.company-export .sec-title,.company-export .sec-box{break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app" style="display:flex">
+  <aside class="side">
+    <div class="brand">
+      <img src="data:image/jpeg;base64,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" alt="MADA ELITE">
+      <h1>MADA ELITE</h1>
+      <small>مادا إيليت — مجموعة أعمال<br>ثقة • دقة • احترافية</small>
+    </div>
+    <div class="nav">
+      <button class="active" data-page="home" onclick="goPage('home')">⌂ الرئيسية</button>
+      <button data-page="companies" onclick="goPage('companies')">▤ الشركات</button>
+      <button data-page="partners" onclick="goPage('partners')">♙ الشركاء</button>
+      <button data-page="financial" onclick="goPage('financial')">﷼ القسم المالي</button>
+      <button data-page="employees" onclick="goPage('employees')">♟ الموظفون</button>
+      <button data-page="documents" onclick="goPage('documents')">▣ المستندات</button>
+      <button data-page="settings" onclick="goPage('settings')">⚙ الإعدادات</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <input id="globalSearch" class="search" placeholder="ابحث عن شركة، شريك، جواز، جوال، أو مجموعة..." oninput="onSearch()">
+      <div class="top-actions">
+        <select id="currentEmployee" title="المستخدم الحالي" onchange="setCurrentEmployee(this.value)" style="width:auto;min-width:180px"></select>
+        <button class="secondary" onclick="exportData()">⬇ نسخة احتياطية</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">⬆ استعادة</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
+
+    <div id="page-home" class="page active">
+      <div class="cards">
+        <div class="card"><div class="muted">الشركات</div><div class="metric" id="mCompanies">0</div></div>
+        <div class="card"><div class="muted">الشركاء</div><div class="metric" id="mPartners">0</div></div>
+        <div class="card"><div class="muted">المجموعات</div><div class="metric" id="mGroups">0</div></div>
+        <div class="card"><div class="muted">المستندات</div><div class="metric" id="mDocs">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar">
+          <h2>أحدث الشركات</h2>
+          <button class="gold" onclick="openCompanyModal()">+ شركة جديدة</button>
+        </div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>#</th><th>الشركة</th><th>المجموعة</th><th>السجل</th><th>الشركاء</th><th>نسبة الشراكة</th><th>إجراءات</th></tr></thead>
+            <tbody id="homeTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-companies" class="page">
+      <div class="panel">
+        <div class="toolbar">
+          <h2>الشركات</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="groupFilter" onchange="render()" style="width:auto;min-width:140px"><option value="">كل المجموعات</option></select>
+            <button class="gold" onclick="openCompanyModal()">+ شركة جديدة</button>
+          </div>
+        </div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>#</th><th>الشركة</th><th>المجموعة</th><th>رقم الطلب</th><th>السجل التجاري</th><th>النشاط</th><th>الشركاء</th><th>إجراءات</th></tr></thead>
+            <tbody id="companiesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-partners" class="page">
+      <div class="panel">
+        <div class="toolbar"><h2>جميع الشركاء</h2><button class="gold" onclick="openPartnerModal()">＋ شريك جديد</button></div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>#</th><th>الاسم</th><th>الشركة</th><th>الجنسية</th><th>الجواز</th><th>الجوال</th><th>النسبة %</th><th>إجراءات</th></tr></thead>
+            <tbody id="partnersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-financial" class="page">
+      <div class="cards">
+        <div class="card"><div class="muted">إجمالي الإيرادات</div><div class="metric" id="mIncome">0</div></div>
+        <div class="card"><div class="muted">إجمالي المصروفات</div><div class="metric" id="mExpense">0</div></div>
+        <div class="card"><div class="muted">صافي الحركة</div><div class="metric" id="mNet">0</div></div>
+        <div class="card"><div class="muted">عدد العمليات</div><div class="metric" id="mTransactions">0</div></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar"><h2>القسم المالي</h2><button class="gold perm-add-financial" onclick="openFinancialModal()">+ عملية مالية جديدة</button></div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>#</th><th>التاريخ</th><th>الشركة</th><th>النوع</th><th>التصنيف</th><th>البيان</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="financialTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-employees" class="page">
+      <div class="panel">
+        <div class="toolbar"><h2>الموظفون والصلاحيات</h2><button class="gold perm-add-employees" onclick="openEmployeeModal()">+ موظف جديد</button></div>
+        <div class="panel" style="margin-bottom:14px;background:#fffaf0">
+          <b>الموظف الحالي</b>
+          <p class="muted" style="margin-top:6px">الصلاحيات أدناه تطبق على أزرار الإدخال والتعديل والحذف داخل البرنامج.</p>
+          <div style="max-width:360px;margin-top:10px"><select id="employeePageCurrent" onchange="setCurrentEmployee(this.value)"></select></div>
+        </div>
+        <div class="tablewrap">
+          <table class="table">
+            <thead><tr><th>#</th><th>الموظف</th><th>المسمى</th><th>الجوال</th><th>الحالة</th><th>الصلاحيات</th><th>إجراءات</th></tr></thead>
+            <tbody id="employeesTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-documents" class="page">
+      <div class="panel">
+        <div class="toolbar"><h2>إنشاء مستند رسمي</h2></div>
+        <div class="formgrid">
+          <div class="field"><label>نوع المستند</label>
+            <select id="docType" onchange="toggleDocFields()">
+              <option value="agreement">اتفاقية تقديم خدمات تأسيس و تسجيل استثماري</option>
+              <option value="receipt">إيصال استلام دفعة</option>
+            </select>
+          </div>
+          <div class="field"><label>الشركة</label><select id="docCompany" onchange="fillDocPartners()"></select></div>
+          <div class="field"><label>مقدم الطلب / الشريك</label><select id="docPartner"></select></div>
+          <div class="field"><label>التاريخ</label><input id="docDate" type="date"></div>
+          <div class="field"><label>رقم الطلب / الإيصال</label><input id="docOrderNo" class="ltr" placeholder="رقم الطلب" readonly></div>
+          <div class="field"><label>نوع الخدمة / الباقة</label>
+            <select id="docService" onchange="applyServicePreset()">
+              <option value="تأسيس وإصدار رخصة تجارية">تأسيس وإصدار رخصة تجارية</option>
+              <option value="استثمار أجنبي - خدمي (29,900)">استثمار أجنبي - خدمي (29,900)</option>
+              <option value="استثمار أجنبي - تجاري (39,900)">استثمار أجنبي - تجاري (39,900)</option>
+              <option value="استثمار أجنبي - صناعي (49,900)">استثمار أجنبي - صناعي (49,900)</option>
+              <option value="باقة STARTER (18,000 سنوي)">باقة STARTER — ما بعد التأسيس</option>
+              <option value="باقة BUSINESS (30,000 سنوي)">باقة BUSINESS — ما بعد التأسيس</option>
+              <option value="باقة PREMIUM (39,000 سنوي)">باقة PREMIUM — ما بعد التأسيس</option>
+              <option value="إدارة المنصات الحكومية (1,500)">إدارة المنصات الحكومية</option>
+              <option value="فتح شركة راسية مع ترخيص خدمي (20,000)">فتح شركة راسية + ترخيص خدمي</option>
+              <option value="ترخيص صناعي (8,500)">ترخيص صناعي</option>
+              <option value="ترخيص بلدية بدون موقع (3,000)">ترخيص بلدية بدون موقع</option>
+              <option value="أخرى">أخرى (تخصيص يدوي)</option>
+            </select>
+          </div>
+        </div>
+        <div id="agreementFields" class="formgrid">
+          <div class="field"><label>إجمالي الأتعاب (ر.س)</label><input id="docPrice" type="number" min="0" value="39900"></div>
+          <div class="field"><label>الخصم (ر.س)</label><input id="docDiscount" type="number" min="0" value="0"></div>
+          <div class="field"><label>المبلغ النهائي بعد الخصم</label><input id="docDiscounted" type="number" min="0" value="39900"></div>
+          <div class="field"><label>الدفعة الأولى عند التوقيع</label><input id="docPay1" type="number" min="0" value="0"></div>
+          <div class="field"><label>الدفعة الثانية / المتبقي</label><input id="docPay2" type="number" min="0" value="0"></div>
+          <div class="field full"><label>وصف الخدمة / البنود الإضافية (اختياري)</label><textarea id="docNotes" rows="2" placeholder="مثال: الحصول على رخصة استثمار خدمية..."></textarea></div>
+        </div>
+        <div id="receiptFields" class="formgrid" style="display:none">
+          <div class="field"><label>إجمالي قيمة الاتفاقية</label><input id="receiptTotal" type="number" min="0" value="0"></div>
+          <div class="field"><label>المبلغ المستلم (الدفعة)</label><input id="receiptAmount" type="number" min="0" value="0"></div>
+          <div class="field"><label>المتبقي</label><input id="receiptRemain" type="number" min="0" value="0"></div>
+          <div class="field"><label>طريقة الدفع</label>
+            <select id="receiptMethod"><option>تحويل بنكي</option><option>نقداً</option></select>
+          </div>
+          <div class="field full"><label>ملاحظات</label><input id="receiptFor" value="دفعة من قيمة اتفاقية تقديم خدمات تأسيس و تسجيل استثماري"></div>
+        </div>
+        <div class="modalfoot">
+          <button class="gold" onclick="createDocument()">حفظ وعرض المستند الرسمي</button>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>المستندات المحفوظة</h2>
+        <div id="documentsList"></div>
+      </div>
+    </div>
+
+    <div id="page-settings" class="page">
+      <div class="panel">
+        <h2>هوية MADA ELITE المعتمدة</h2>
+        <p class="muted" style="line-height:1.9;margin-bottom:10px">
+          <b>مادا إيليت | MADA ELITE</b><br>
+          ثقة • دقة • احترافية<br>
+          السجل التجاري: 7053898792<br>
+          هاتف: 7053898792 · البريد: info@madaelite.com · www.madaelite.com<br>
+          العنوان: المدينة المنورة، المملكة العربية السعودية<br>
+          Instagram: @mada_ellite · البريد البديل: mada.elite.b@gmail.com
+        </p>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>ربط Google Sheets (اختياري)</h2>
+        <div class="field"><label>رابط Web App</label><input id="apiUrl" class="ltr" placeholder="https://script.google.com/macros/s/..."></div>
+        <div class="field"><label>رمز الربط</label><input id="apiToken" type="password"></div>
+        <div id="syncMsg" class="muted" style="margin:8px 0"></div>
+        <div class="modalfoot">
+          <button class="gold" onclick="saveSyncSettings()">حفظ واختبار</button>
+          <button class="secondary" onclick="syncNow()">مزامنة الآن</button>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h2>رابط تعبئة بيانات العميل</h2>
+        <div class="formgrid">
+          <div class="field"><label>الشركة</label><select id="shareCompany"></select></div>
+          <div class="field"><label>اسم الشخص</label><input id="sharePerson"></div>
+        </div>
+        <div class="field"><label>الرابط</label><input id="shareUrl" class="ltr" readonly></div>
+        <div class="modalfoot">
+          <button class="gold" onclick="makeShareLink()">إنشاء الرابط</button>
+          <button class="secondary" onclick="copyShareLink()">نسخ</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="companyModal" class="modal"><div class="modalbox">
+  <h2 id="companyModalTitle">شركة جديدة</h2>
+  <div class="formgrid">
+    <div class="field"><label>اسم الشركة *</label><input id="cName"></div>
+    <div class="field"><label>المجموعة</label><input id="cGroup"></div>
+    <div class="field"><label>رقم الطلب</label><input id="cOrderNo" class="ltr" placeholder="00181"></div>
+    <div class="field"><label>السجل التجاري</label><input id="cCr" class="ltr"></div>
+    <div class="field"><label>النشاط</label><input id="cActivity"></div>
+    <div class="field"><label>رقم الجوال</label><input id="cPhone" class="ltr"></div>
+    <div class="field"><label>البريد الإلكتروني</label><input id="cEmail" type="email" class="ltr"></div>
+    <div class="field full"><label>العنوان</label><input id="cAddress"></div>
+    <div class="field full"><label>ملاحظات</label><textarea id="cNotes" rows="2"></textarea></div>
+  </div>
+  <div class="modalfoot">
+    <button class="gold" onclick="saveCompany()">حفظ</button>
+    <button class="secondary" onclick="closeModal('companyModal')">إلغاء</button>
+  </div>
+</div></div>
+
+<div id="detailsModal" class="modal"><div class="modalbox" style="width:min(820px,100%)">
+  <h2 id="detailsTitle">تفاصيل الشركة</h2>
+  <div id="detailsBody"></div>
+  <div class="modalfoot">
+    <button class="gold" onclick="openPartnerModal()">+ إضافة شريك</button>
+    <button class="secondary" onclick="exportCompanyPDF()">📄 ملف الشركة / حفظ PDF</button>
+    <button class="secondary" onclick="printCompanyDetails()">طباعة</button>
+    <button class="secondary" onclick="closeModal('detailsModal')">إغلاق</button>
+  </div>
+</div></div>
+
+<div id="partnerModal" class="modal"><div class="modalbox">
+  <h2 id="partnerModalTitle">شريك جديد</h2>
+  <div class="formgrid">
+    <div class="field full"><label>الشركة *</label><select id="pCompany"></select></div>
+    <div class="field"><label>الاسم الكامل *</label><input id="pName"></div>
+    <div class="field"><label>رقم الجواز</label><input id="pPassport"></div>
+    <div class="field"><label>الجنسية</label><input id="pNationality"></div>
+    <div class="field"><label>انتهاء الجواز</label><input id="pExpiry" type="date"></div>
+    <div class="field"><label>الجوال</label><input id="pPhone"></div>
+    <div class="field"><label>البريد</label><input id="pEmail" type="email"></div>
+    <div class="field full"><label>العنوان</label><input id="pAddress"></div>
+    <div class="field"><label>نسبة الشراكة %</label><input id="pShare" type="number" min="0" max="100" value="0"></div>
+    <div class="field"><label>ملف الجواز</label><input id="pFile" type="file" accept="image/*,.pdf" onchange="handleFile(event)"></div>
+  </div>
+  <div class="modalfoot">
+    <button class="gold" onclick="savePartner()">حفظ</button>
+    <button class="secondary" onclick="closeModal('partnerModal')">إلغاء</button>
+  </div>
+</div></div>
+
+<div id="financialModal" class="modal"><div class="modalbox">
+  <h2 id="financialModalTitle">عملية مالية جديدة</h2>
+  <div class="formgrid">
+    <div class="field"><label>الشركة *</label><select id="fCompany"></select></div>
+    <div class="field"><label>التاريخ *</label><input id="fDate" type="date"></div>
+    <div class="field"><label>نوع العملية</label><select id="fType"><option value="income">إيراد</option><option value="expense">مصروف</option></select></div>
+    <div class="field"><label>التصنيف</label><input id="fCategory" placeholder="رسوم، دفعة عميل، مصروف تشغيلي..." ></div>
+    <div class="field"><label>المبلغ *</label><input id="fAmount" class="ltr" type="number" min="0" step="0.01"></div>
+    <div class="field"><label>الحالة</label><select id="fStatus"><option>مدفوع</option><option>معلق</option><option>ملغى</option></select></div>
+    <div class="field full"><label>البيان</label><input id="fDescription"></div>
+    <div class="field"><label>المرجع / رقم الفاتورة</label><input id="fReference" class="ltr"></div>
+    <div class="field"><label>طريقة الدفع</label><select id="fMethod"><option>تحويل بنكي</option><option>نقدي</option><option>بطاقة</option><option>أخرى</option></select></div>
+    <div class="field full"><label>ملاحظات</label><textarea id="fNotes" rows="2"></textarea></div>
+  </div>
+  <div class="modalfoot"><button class="gold" onclick="saveFinancial()">حفظ</button><button class="secondary" onclick="closeModal('financialModal')">إلغاء</button></div>
+</div></div>
+
+<div id="employeeModal" class="modal"><div class="modalbox" style="width:min(900px,100%)">
+  <h2 id="employeeModalTitle">موظف جديد</h2>
+  <div class="formgrid">
+    <div class="field"><label>اسم الموظف *</label><input id="eName"></div>
+    <div class="field"><label>المسمى الوظيفي</label><input id="eJob"></div>
+    <div class="field"><label>الجوال</label><input id="ePhone" class="ltr"></div>
+    <div class="field"><label>البريد الإلكتروني</label><input id="eEmail" type="email" class="ltr"></div>
+    <div class="field"><label>الحالة</label><select id="eActive"><option value="1">نشط</option><option value="0">موقوف</option></select></div>
+    <div class="field"><label>ملاحظات</label><input id="eNotes"></div>
+  </div>
+  <div class="panel" style="margin-top:8px;background:#fffaf0">
+    <h3 style="margin-bottom:10px">اختيار الصلاحيات</h3>
+    <p class="muted" style="margin-bottom:12px">حدد ما يستطيع هذا الموظف القيام به في كل قسم.</p>
+    <div class="tablewrap"><table class="table" style="min-width:700px">
+      <thead><tr><th>القسم</th><th>عرض</th><th>إدخال</th><th>تعديل</th><th>إلغاء / حذف</th></tr></thead>
+      <tbody id="permissionRows"></tbody>
+    </table></div>
+  </div>
+  <div class="modalfoot"><button class="gold" onclick="saveEmployee()">حفظ الموظف</button><button class="secondary" onclick="closeModal('employeeModal')">إلغاء</button></div>
+</div></div>
+
+<div id="docPreviewModal" class="modal"><div class="modalbox" style="width:min(920px,100%)">
+  <div id="docPreview"></div>
+  <div class="modalfoot no-print">
+    <button class="gold" onclick="printDocument()">🖨 طباعة / PDF</button>
+    <button class="secondary" onclick="closeModal('docPreviewModal')">إغلاق</button>
+  </div>
+</div></div>
+
+<div class="print-area" id="printArea"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const LOGO = "data:image/jpeg;base64,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";
+const LOGO_SM = "data:image/jpeg;base64,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";
+const BRAND = {
+  nameAr: "مادا إيليت",
+  nameEn: "MADA ELITE",
+  tagline: "ثقة • دقة • احترافية",
+  slogan: "شريكك لتصنع فرص أكبر",
+  sloganEn: "MORE BUSINESS BIGGER POSSIBILITIES",
+  cr: "7053898792",
+  phone: "7053898792",
+  email: "info@madaelite.com",
+  web: "www.madaelite.com",
+  address: "المدينة المنورة، المملكة العربية السعودية",
+  addressFull: "شارع الملك عبد الله بن عبد العزيز، الفتح، المدينة المنورة، المملكة العربية السعودية",
+  iban: "SA8110000033100002167910",
+  bank: "البنك الأهلي السعودي",
+  bankCode: "SNB",
+  instagram: "@mada_ellite"
+};
+const SERVICE_PRESETS = {
+  "استثمار أجنبي - خدمي (29,900)": {price:29900, discount:0},
+  "استثمار أجنبي - تجاري (39,900)": {price:39900, discount:0},
+  "استثمار أجنبي - صناعي (49,900)": {price:49900, discount:0},
+  "باقة STARTER (18,000 سنوي)": {price:18000, discount:0},
+  "باقة BUSINESS (30,000 سنوي)": {price:30000, discount:0},
+  "باقة PREMIUM (39,000 سنوي)": {price:39000, discount:0},
+  "إدارة المنصات الحكومية (1,500)": {price:1500, discount:0},
+  "فتح شركة راسية مع ترخيص خدمي (20,000)": {price:20000, discount:0},
+  "ترخيص صناعي (8,500)": {price:8500, discount:0},
+  "ترخيص بلدية بدون موقع (3,000)": {price:3000, discount:0},
+  "تأسيس وإصدار رخصة تجارية": {price:39900, discount:0}
+};
+
+const KEY = "mada_elite_v3_data";
+const DOC_KEY = "mada_elite_v3_docs";
+const REMOTE_URL_KEY = "mada_elite_v3_remote_url";
+const REMOTE_TOKEN_KEY = "mada_elite_v3_remote_token";
+
+let data = JSON.parse(localStorage.getItem(KEY) || "null") || {companies:[],employees:[],financial:[]};
+data.companies = Array.isArray(data.companies)?data.companies:[];
+data.employees = Array.isArray(data.employees)?data.employees:[];
+data.financial = Array.isArray(data.financial)?data.financial:[];
+let docs = JSON.parse(localStorage.getItem(DOC_KEY) || "[]");
+let selectedCompanyId = null, editCompanyId = null, editPartnerId = null, tempFile = "", currentPreviewHtml = "";
+let editFinancialId = null, editEmployeeId = null;
+const PERM_MODULES = {companies:"الشركات",partners:"الشركاء",financial:"القسم المالي",documents:"المستندات",employees:"الموظفون"};
+const DEFAULT_PERMS = Object.fromEntries(Object.keys(PERM_MODULES).map(k=>[k,{view:true,add:false,edit:false,delete:false}]));
+const OWNER_PERMS = Object.fromEntries(Object.keys(PERM_MODULES).map(k=>[k,{view:true,add:true,edit:true,delete:true}]));
+const OWNER_ID = "__owner__";
+let currentEmployeeId = localStorage.getItem("mada_elite_current_employee") || OWNER_ID;
+
+function employeeById(id){return id===OWNER_ID?{id:OWNER_ID,name:"المالك / المدير",job:"صلاحيات كاملة",active:true,permissions:OWNER_PERMS}:data.employees.find(e=>e.id===id)}
+function permsFor(id=currentEmployeeId){const e=employeeById(id);return e?.permissions||DEFAULT_PERMS}
+function canAction(module,action){const p=permsFor();if(currentEmployeeId===OWNER_ID)return true;return !!(p[module]?.[action]||p[module]?.view&&action==="view")}
+function requirePermission(module,action){if(canAction(module,action))return true;toast("ليس لديك صلاحية تنفيذ هذا الإجراء");return false}
+function setCurrentEmployee(id){currentEmployeeId=id||OWNER_ID;localStorage.setItem("mada_elite_current_employee",currentEmployeeId);syncEmployeeSelectors();applyPermissions();render();toast("تم تطبيق صلاحيات: "+(employeeById(currentEmployeeId)?.name||"المالك / المدير"))}
+function syncEmployeeSelectors(){const opts='<option value="'+OWNER_ID+'">المالك / المدير — كامل الصلاحيات</option>'+data.employees.map(e=>'<option value="'+e.id+'">'+esc(e.name)+(e.active===false?' — موقوف':'')+'</option>').join("");[document.getElementById("currentEmployee"),document.getElementById("employeePageCurrent")].forEach(el=>{if(el){el.innerHTML=opts;el.value=employeeById(currentEmployeeId)?currentEmployeeId:OWNER_ID}})}
+function applyPermissions(){const map={companies:"companies",partners:"partners",financial:"financial",employees:"employees",documents:"documents"};Object.entries(map).forEach(([module,cls])=>{document.querySelectorAll(".perm-add-"+cls).forEach(el=>el.style.display=canAction(module,"add")?"":"none")});document.querySelectorAll("[data-perm]").forEach(el=>{const [m,a]=el.dataset.perm.split(":");el.style.display=canAction(m,a)?"":"none"})}
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(data));if(localStorage.getItem(REMOTE_URL_KEY))syncDataToCloud(false)}
+function persistDocs(){localStorage.setItem(DOC_KEY,JSON.stringify(docs))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function money(n){return Number(n||0).toLocaleString("en-US")}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800)}
+function fmtDate(d){if(!d)return"";const p=String(d).split("-");return p.length===3?p[2]+" / "+p[1]+" / "+p[0]+"م":d}
+
+function goPage(name){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+  const page=document.getElementById("page-"+name);if(page)page.classList.add("active");
+  const btn=document.querySelector(`.nav button[data-page="${name}"]`);if(btn)btn.classList.add("active");
+  if(name==="documents"){document.getElementById("docDate").value=new Date().toISOString().slice(0,10);fillDocCompanies();renderDocuments();toggleDocFields()}
+  if(name==="financial"){fillFinancialCompanies();renderFinancial()}
+  if(name==="employees"){syncEmployeeSelectors();renderEmployees()}
+  if(name==="settings"){fillShareCompanies();document.getElementById("apiUrl").value=localStorage.getItem(REMOTE_URL_KEY)||"";document.getElementById("apiToken").value=localStorage.getItem(REMOTE_TOKEN_KEY)||""}
+  render();applyPermissions();
+}
+function onSearch(){render()}
+
+function filteredCompanies(){
+  const q=(document.getElementById("globalSearch")?.value||"").trim().toLowerCase();
+  const gf=document.getElementById("groupFilter")?.value||"";
+  return data.companies.filter(c=>{
+    if(gf&&c.group!==gf)return false;
+    if(!q)return true;
+    return [c.name,c.group,c.cr,c.activity,c.notes,...(c.partners||[]).flatMap(p=>[p.name,p.passport,p.phone,p.nationality])].join(" ").toLowerCase().includes(q);
+  });
+}
+
+function render(){
+  const companies=filteredCompanies();
+  const allPartners=data.companies.flatMap(c=>(c.partners||[]).map(p=>({...p,company:c.name,companyId:c.id})));
+  const groups=[...new Set(data.companies.map(c=>c.group).filter(Boolean))];
+  document.getElementById("mCompanies").textContent=data.companies.length;
+  document.getElementById("mPartners").textContent=allPartners.length;
+  document.getElementById("mGroups").textContent=groups.length;
+  document.getElementById("mDocs").textContent=docs.length;
+  const gf=document.getElementById("groupFilter");
+  if(gf){const cur=gf.value;gf.innerHTML='<option value="">كل المجموعات</option>'+groups.map(g=>`<option value="${esc(g)}" ${g===cur?"selected":""}>${esc(g)}</option>`).join("")}
+  const homeBody=document.getElementById("homeTable");
+  if(homeBody){
+    homeBody.innerHTML=companies.length?companies.slice(0,15).map((c,i)=>{
+      const total=(c.partners||[]).reduce((s,p)=>s+(+p.share||0),0);
+      const st=total===100?"status":total>100?"status bad":"status warn";
+      return `<tr><td>${i+1}</td><td><b>${esc(c.name)}</b></td><td>${esc(c.group||"—")}</td><td class="ltr">${esc(c.cr||"—")}</td><td>${(c.partners||[]).length}</td><td><span class="${st}">${total}%</span></td>
+      <td><button class="mini" onclick="showCompany('${c.id}')">عرض</button> <button class="mini" onclick="openCompanyModal('${c.id}')">تعديل</button> <button class="mini danger" onclick="deleteCompany('${c.id}')">حذف</button></td></tr>`;
+    }).join(""):'<tr><td colspan="7" class="empty">لا توجد شركات — اضغط «شركة جديدة»</td></tr>';
+  }
+  const cBody=document.getElementById("companiesTable");
+  if(cBody){
+    cBody.innerHTML=companies.length?companies.map((c,i)=>`<tr><td>${i+1}</td><td><b>${esc(c.name)}</b></td><td>${esc(c.group||"—")}</td><td class="ltr">${esc(c.orderNo||"—")}</td><td class="ltr">${esc(c.cr||"—")}</td><td>${esc(c.activity||"—")}</td><td>${(c.partners||[]).length}</td>
+    <td><button class="mini" onclick="showCompany('${c.id}')">عرض</button> <button class="mini" onclick="openCompanyModal('${c.id}')">تعديل</button> <button class="mini danger" onclick="deleteCompany('${c.id}')">حذف</button></td></tr>`).join(""):'<tr><td colspan="8" class="empty">لا توجد شركات</td></tr>';
+  }
+  const pBody=document.getElementById("partnersTable");
+  if(pBody){
+    const q=(document.getElementById("globalSearch")?.value||"").trim().toLowerCase();
+    let list=allPartners;
+    if(q)list=list.filter(p=>[p.name,p.company,p.passport,p.phone,p.nationality].join(" ").toLowerCase().includes(q));
+    pBody.innerHTML=list.length?list.map((p,i)=>`<tr><td>${i+1}</td><td><b>${esc(p.name)}</b></td><td>${esc(p.company)}</td><td>${esc(p.nationality||"—")}</td><td class="ltr">${esc(p.passport||"—")}</td><td class="ltr">${esc(p.phone||"—")}</td><td>${p.share||0}%</td>
+    <td>${canAction("partners","edit")?`<button class="mini" onclick="selectedCompanyId='${p.companyId}';openPartnerModal('${p.id}')">تعديل</button>`:""} ${canAction("partners","delete")?`<button class="mini danger" onclick="deletePartner('${p.companyId}','${p.id}')">حذف</button>`:""}</td></tr>`).join(""):'<tr><td colspan="8" class="empty">لا يوجد شركاء</td></tr>';
+  }
+  renderFinancial();renderEmployees();syncEmployeeSelectors();applyPermissions();
+}
+
+function openCompanyModal(id){
+  if(id ? !requirePermission("companies","edit") : !requirePermission("companies","add")) return;
+  editCompanyId=id||null;
+  document.getElementById("companyModalTitle").textContent=id?"تعديل شركة":"شركة جديدة";
+  if(id){const c=data.companies.find(x=>x.id===id);if(!c)return;cName.value=c.name||"";cGroup.value=c.group||"";cOrderNo.value=c.orderNo||"";cCr.value=c.cr||"";cActivity.value=c.activity||"";cPhone.value=c.phone||"";cEmail.value=c.email||"";cAddress.value=c.address||"";cNotes.value=c.notes||""}
+  else{cName.value=cGroup.value=cOrderNo.value=cCr.value=cActivity.value=cPhone.value=cEmail.value=cAddress.value=cNotes.value=""}
+  document.getElementById("companyModal").classList.add("show");
+}
+function nextCompanyOrderNo(){
+  const nums=data.companies.map(c=>parseInt(String(c.orderNo||"").replace(/\D/g,""),10)).filter(Number.isFinite);
+  const next=Math.max(180,...nums)+1;
+  return String(next).padStart(5,"0");
+}
+function saveCompany(){
+  if(editCompanyId ? !requirePermission("companies","edit") : !requirePermission("companies","add")) return;
+  const name=cName.value.trim();if(!name){alert("أدخل اسم الشركة");return}
+  const orderNo=cOrderNo.value.trim()||nextCompanyOrderNo();
+  if(orderNo && data.companies.some(x=>x.id!==editCompanyId && String(x.orderNo||"").trim()===orderNo)){alert("رقم الطلب مستخدم بالفعل لشركة أخرى");return}
+  if(editCompanyId){const c=data.companies.find(x=>x.id===editCompanyId);if(!c)return;c.name=name;c.group=cGroup.value.trim();c.orderNo=orderNo;c.cr=cCr.value.trim();c.activity=cActivity.value.trim();c.phone=cPhone.value.trim();c.email=cEmail.value.trim();c.address=cAddress.value.trim();c.notes=cNotes.value.trim()}
+  else{data.companies.push({id:crypto.randomUUID(),name,group:cGroup.value.trim(),orderNo,cr:cCr.value.trim(),activity:cActivity.value.trim(),phone:cPhone.value.trim(),email:cEmail.value.trim(),address:cAddress.value.trim(),notes:cNotes.value.trim(),partners:[]})}
+  persist();closeModal("companyModal");render();toast("تم حفظ الشركة");
+}
+function deleteCompany(id){if(!requirePermission("companies","delete"))return;if(!confirm("حذف الشركة وجميع شركائها؟"))return;data.companies=data.companies.filter(x=>x.id!==id);persist();render();toast("تم الحذف")}
+function showCompany(id){
+  selectedCompanyId=id;const c=data.companies.find(x=>x.id===id);if(!c)return;
+  document.getElementById("detailsTitle").textContent=c.name;
+  const total=(c.partners||[]).reduce((s,p)=>s+(+p.share||0),0);
+  const partnersHtml=(c.partners||[]).length?(c.partners||[]).map(p=>`<div class="partner-row"><div class="info"><b>${esc(p.name)}</b><div class="muted">${esc(p.nationality||"")} · جواز: <span class="ltr">${esc(p.passport||"—")}</span> · ${p.share||0}%</div></div>
+  <div><button class="mini" onclick="openPartnerModal('${p.id}')">تعديل</button> <button class="mini danger" onclick="deletePartner('${c.id}','${p.id}')">حذف</button></div></div>`).join(""):'<div class="empty">لا يوجد شركاء</div>';
+  document.getElementById("detailsBody").innerHTML=`<div class="formgrid" style="margin-bottom:14px">
+    <div><span class="muted">المجموعة</span><div><b>${esc(c.group||"—")}</b></div></div>
+    <div><span class="muted">رقم الطلب</span><div class="ltr"><b>${esc(c.orderNo||"—")}</b></div></div>
+    <div><span class="muted">السجل</span><div class="ltr"><b>${esc(c.cr||"—")}</b></div></div>
+    <div><span class="muted">النشاط</span><div><b>${esc(c.activity||"—")}</b></div></div>
+    <div><span class="muted">الجوال</span><div class="ltr"><b>${esc(c.phone||"—")}</b></div></div>
+    <div><span class="muted">البريد</span><div class="ltr"><b>${esc(c.email||"—")}</b></div></div>
+    <div class="full"><span class="muted">العنوان</span><div><b>${esc(c.address||"—")}</b></div></div>
+    <div><span class="muted">مجموع النسب</span><div><b style="color:${total===100?"#168a4b":total>100?"#b32121":"#c67a00"}">${total}%</b></div></div>
+  </div>${c.notes?`<p class="muted" style="margin-bottom:12px">${esc(c.notes)}</p>`:""}<div style="font-weight:800;margin-bottom:8px">الشركاء (${(c.partners||[]).length})</div>${partnersHtml}`;
+  document.getElementById("detailsModal").classList.add("show");
+}
+
+function openPartnerModal(pid){
+  if(pid ? !requirePermission("partners","edit") : !requirePermission("partners","add")) return;
+  editPartnerId=pid||null;tempFile="";
+  document.getElementById("partnerModalTitle").textContent=pid?"تعديل شريك":"شريك جديد";
+  const companySelect=document.getElementById("pCompany");
+  companySelect.innerHTML=data.companies.length?data.companies.map(c=>`<option value="${c.id}">${esc(c.name)}${c.orderNo?" — "+esc(c.orderNo):""}</option>`).join(""):'<option value="">لا توجد شركات</option>';
+  const c=data.companies.find(x=>x.id===selectedCompanyId);
+  if(pid&&c){
+    const p=(c.partners||[]).find(x=>x.id===pid);
+    if(p){companySelect.value=c.id;pName.value=p.name||"";pPassport.value=p.passport||"";pNationality.value=p.nationality||"";pExpiry.value=p.expiry||"";pPhone.value=p.phone||"";pEmail.value=p.email||"";pAddress.value=p.address||"";pShare.value=p.share||0;tempFile=p.passportFile||""}
+  }else{
+    if(selectedCompanyId && data.companies.some(x=>x.id===selectedCompanyId)) companySelect.value=selectedCompanyId;
+    pName.value=pPassport.value=pNationality.value=pExpiry.value=pPhone.value=pEmail.value=pAddress.value="";pShare.value=0;
+    const pf=document.getElementById("pFile");if(pf)pf.value="";
+  }
+  companySelect.disabled=!!pid;
+  document.getElementById("partnerModal").classList.add("show");
+}
+function handleFile(e){const f=e.target.files[0];if(!f){tempFile="";return}if(f.size>2*1024*1024){alert("الملف أكبر من 2 ميجا");e.target.value="";return}const r=new FileReader();r.onload=()=>{tempFile=r.result};r.readAsDataURL(f)}
+function savePartner(){
+  if(editPartnerId ? !requirePermission("partners","edit") : !requirePermission("partners","add")) return;
+  const companyId=document.getElementById("pCompany")?.value||selectedCompanyId;
+  const c=data.companies.find(x=>x.id===companyId);if(!c){alert("اختر الشركة أولاً");return}
+  selectedCompanyId=companyId;
+  const name=pName.value.trim();if(!name){alert("أدخل اسم الشريك");return}
+  const share=Math.max(0,Math.min(100,+pShare.value||0));
+  const p={id:editPartnerId||crypto.randomUUID(),name,passport:pPassport.value.trim(),nationality:pNationality.value.trim(),expiry:pExpiry.value,phone:pPhone.value.trim(),email:pEmail.value.trim(),address:pAddress.value.trim(),share,passportFile:tempFile||""};
+  if(!c.partners)c.partners=[];
+  if(editPartnerId)c.partners=c.partners.map(x=>x.id===editPartnerId?p:x);else c.partners.push(p);
+  persist();closeModal("partnerModal");showCompany(selectedCompanyId);render();toast("تم حفظ الشريك");
+}
+function deletePartner(cid,pid){if(!requirePermission("partners","delete"))return;if(!confirm("حذف هذا الشريك؟"))return;const c=data.companies.find(x=>x.id===cid);if(!c)return;c.partners=(c.partners||[]).filter(x=>x.id!==pid);persist();if(document.getElementById("detailsModal").classList.contains("show"))showCompany(cid);render();toast("تم الحذف")}
+
+function fillFinancialCompanies(){const el=document.getElementById("fCompany");if(!el)return;el.innerHTML=data.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")||'<option value="">لا توجد شركات</option>'}
+function openFinancialModal(id){if(id?!requirePermission("financial","edit"):!requirePermission("financial","add"))return;editFinancialId=id||null;document.getElementById("financialModalTitle").textContent=id?"تعديل عملية مالية":"عملية مالية جديدة";fillFinancialCompanies();const d=id?data.financial.find(x=>x.id===id):null;fDate.value=d?.date||new Date().toISOString().slice(0,10);fCompany.value=d?.companyId||data.companies[0]?.id||"";fType.value=d?.type||"income";fCategory.value=d?.category||"";fAmount.value=d?.amount??"";fStatus.value=d?.status||"مدفوع";fDescription.value=d?.description||"";fReference.value=d?.reference||"";fMethod.value=d?.method||"تحويل بنكي";fNotes.value=d?.notes||"";document.getElementById("financialModal").classList.add("show")}
+function saveFinancial(){if(editFinancialId?!requirePermission("financial","edit"):!requirePermission("financial","add"))return;const amount=Number(fAmount.value||0);if(amount<=0){alert("أدخل مبلغًا صحيحًا");return}const company=data.companies.find(c=>c.id===fCompany.value);if(!company){alert("اختر الشركة");return}const item={id:editFinancialId||crypto.randomUUID(),companyId:company.id,company:company.name,date:fDate.value||new Date().toISOString().slice(0,10),type:fType.value,category:fCategory.value.trim(),amount,status:fStatus.value,description:fDescription.value.trim(),reference:fReference.value.trim(),method:fMethod.value,notes:fNotes.value.trim(),updatedAt:new Date().toISOString()};if(editFinancialId)data.financial=data.financial.map(x=>x.id===editFinancialId?item:x);else data.financial.unshift(item);persist();closeModal("financialModal");renderFinancial();render();toast("تم حفظ العملية المالية")}
+function deleteFinancial(id){if(!requirePermission("financial","delete"))return;if(!confirm("حذف العملية المالية؟"))return;data.financial=data.financial.filter(x=>x.id!==id);persist();renderFinancial();render();toast("تم حذف العملية المالية")}
+function renderFinancial(){const rows=data.financial||[];const income=rows.filter(x=>x.type==="income"&&x.status!=="ملغى").reduce((s,x)=>s+Number(x.amount||0),0);const expense=rows.filter(x=>x.type==="expense"&&x.status!=="ملغى").reduce((s,x)=>s+Number(x.amount||0),0);const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=money(v)+" ر.س"};set("mIncome",income);set("mExpense",expense);set("mNet",income-expense);const mt=document.getElementById("mTransactions");if(mt)mt.textContent=rows.length;const tb=document.getElementById("financialTable");if(!tb)return;tb.innerHTML=rows.length?rows.slice(0,100).map((x,i)=>`<tr><td>${i+1}</td><td class="ltr">${esc(x.date)}</td><td>${esc(x.company||"—")}</td><td>${x.type==="income"?"إيراد":"مصروف"}</td><td>${esc(x.category||"—")}</td><td>${esc(x.description||"—")}</td><td class="ltr"><b>${money(x.amount)} ر.س</b></td><td>${esc(x.status||"—")}</td><td>${canAction("financial","edit")?`<button class="mini" onclick="openFinancialModal('${x.id}')">تعديل</button>`:""} ${canAction("financial","delete")?`<button class="mini danger" onclick="deleteFinancial('${x.id}')">حذف</button>`:""}</td></tr>`).join(""):'<tr><td colspan="9" class="empty">لا توجد عمليات مالية</td></tr>'}
+function permissionRow(module){const p=editEmployeeId?((data.employees.find(e=>e.id===editEmployeeId)||{}).permissions||{}):{};const v=p[module]||DEFAULT_PERMS[module];return `<tr><td><b>${esc(PERM_MODULES[module])}</b></td>${["view","add","edit","delete"].map(a=>`<td style="text-align:center"><input type="checkbox" data-perm-input="${module}:${a}" ${v[a]?'checked':''} style="width:18px;height:18px"></td>`).join("")}</tr>`}
+function renderPermissionRows(){const el=document.getElementById("permissionRows");if(el)el.innerHTML=Object.keys(PERM_MODULES).map(permissionRow).join("")}
+function openEmployeeModal(id){if(id?!requirePermission("employees","edit"):!requirePermission("employees","add"))return;editEmployeeId=id||null;document.getElementById("employeeModalTitle").textContent=id?"تعديل موظف وصلاحيات":"موظف جديد";const e=id?data.employees.find(x=>x.id===id):null;eName.value=e?.name||"";eJob.value=e?.job||"";ePhone.value=e?.phone||"";eEmail.value=e?.email||"";eActive.value=e?.active===false?"0":"1";eNotes.value=e?.notes||"";renderPermissionRows();document.getElementById("employeeModal").classList.add("show")}
+function saveEmployee(){if(editEmployeeId?!requirePermission("employees","edit"):!requirePermission("employees","add"))return;const name=eName.value.trim();if(!name){alert("أدخل اسم الموظف");return}const permissions={};Object.keys(PERM_MODULES).forEach(m=>{permissions[m]={};["view","add","edit","delete"].forEach(a=>{permissions[m][a]=!!document.querySelector(`[data-perm-input="${m}:${a}"]`)?.checked})});const item={id:editEmployeeId||crypto.randomUUID(),name,job:eJob.value.trim(),phone:ePhone.value.trim(),email:eEmail.value.trim(),active:eActive.value==="1",notes:eNotes.value.trim(),permissions};if(editEmployeeId)data.employees=data.employees.map(x=>x.id===editEmployeeId?item:x);else data.employees.push(item);persist();closeModal("employeeModal");renderEmployees();syncEmployeeSelectors();render();toast("تم حفظ الموظف والصلاحيات")}
+function deleteEmployee(id){if(!requirePermission("employees","delete"))return;if(!confirm("حذف الموظف؟"))return;data.employees=data.employees.filter(x=>x.id!==id);if(currentEmployeeId===id)setCurrentEmployee(OWNER_ID);persist();renderEmployees();syncEmployeeSelectors();render();toast("تم حذف الموظف")}
+function renderEmployees(){const tb=document.getElementById("employeesTable");if(!tb)return;tb.innerHTML=data.employees.length?data.employees.map((e,i)=>{const p=e.permissions||{};const n=Object.entries(p).filter(([m,v])=>v?.add||v?.edit||v?.delete).map(([m,v])=>PERM_MODULES[m]).join("، ")||"عرض فقط";return `<tr><td>${i+1}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.job||"—")}</td><td class="ltr">${esc(e.phone||"—")}</td><td>${e.active===false?'<span class="status bad">موقوف</span>':'<span class="status">نشط</span>'}</td><td>${esc(n)}</td><td>${canAction("employees","edit")?`<button class="mini" onclick="openEmployeeModal('${e.id}')">تعديل وصلاحيات</button>`:""} ${canAction("employees","delete")?`<button class="mini danger" onclick="deleteEmployee('${e.id}')">حذف</button>`:""}</td></tr>`}).join(""):'<tr><td colspan="7" class="empty">لا يوجد موظفون مضافون — المالك/المدير لديه كامل الصلاحيات تلقائيًا.</td></tr>'}
+
+function toggleDocFields(){const a=document.getElementById("docType").value==="agreement";document.getElementById("agreementFields").style.display=a?"grid":"none";document.getElementById("receiptFields").style.display=a?"none":"grid"}
+function applyServicePreset(){const s=document.getElementById("docService").value;const p=SERVICE_PRESETS[s];if(p){docPrice.value=p.price;docDiscount.value=p.discount;docDiscounted.value=p.price-p.discount}}
+function ensureCompanyOrderNo(c){
+  if(!c)return "";
+  if(!String(c.orderNo||"").trim()){
+    c.orderNo=nextCompanyOrderNo();
+    persist();
+  }
+  return String(c.orderNo);
+}
+function fillDocCompanies(){const el=document.getElementById("docCompany");el.innerHTML=data.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")||'<option value="">لا توجد شركات</option>';fillDocPartners()}
+function fillDocPartners(){const c=data.companies.find(x=>x.id===document.getElementById("docCompany").value);const el=document.getElementById("docPartner");const ps=c?.partners||[];el.innerHTML=ps.length?ps.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join(""):'<option value="">بدون شريك محدد</option>';const no=document.getElementById("docOrderNo");if(no)no.value=c?ensureCompanyOrderNo(c):""}
+
+function createDocument(){
+  if(!requirePermission("documents","add"))return;
+  const type=document.getElementById("docType").value;
+  const c=data.companies.find(x=>x.id===document.getElementById("docCompany").value);
+  if(!c){toast("أضف شركة أولاً");return}
+  const p=(c.partners||[]).find(x=>x.id===document.getElementById("docPartner").value);
+  const fixedOrderNo=ensureCompanyOrderNo(c);
+  const price=+(document.getElementById("docPrice")?.value||0);
+  const discount=+(document.getElementById("docDiscount")?.value||0);
+  const discounted=+(document.getElementById("docDiscounted")?.value||(price-discount));
+  const pay1=+(document.getElementById("docPay1")?.value||0);
+  const pay2=+(document.getElementById("docPay2")?.value||0);
+  const d={
+    id:"D"+Date.now(),type,companyId:c.id,company:c.name,orderNo:fixedOrderNo,cr:c.cr||"",activity:c.activity||"",companyPhone:c.phone||"",companyEmail:c.email||"",companyAddress:c.address||"",
+    partnerId:p?.id||"",partner:p?.name||"",partnerNationality:p?.nationality||"",partnerPassport:p?.passport||"",
+    partners:(c.partners||[]).map(x=>({name:x.name,nationality:x.nationality||"",passport:x.passport||"",share:x.share||0})),
+    date:document.getElementById("docDate").value||new Date().toISOString().slice(0,10),
+    orderNo:fixedOrderNo,
+    service:document.getElementById("docService")?.value||"",
+    notes:document.getElementById("docNotes")?.value||"",
+    price,discount,discounted,pay1,pay2,
+    amount:+(document.getElementById("receiptAmount")?.value||0),
+    receiptTotal:+(document.getElementById("receiptTotal")?.value||0),
+    receiptRemain:+(document.getElementById("receiptRemain")?.value||0),
+    method:document.getElementById("receiptMethod")?.value||"تحويل بنكي",
+    forText:document.getElementById("receiptFor")?.value||"",
+    createdAt:new Date().toISOString()
+  };
+  docs.unshift(d);persistDocs();renderDocuments();showDocument(d);toast("تم حفظ المستند الرسمي");
+}
+function renderDocuments(){
+  const el=document.getElementById("documentsList");if(!el)return;
+  el.innerHTML=docs.length?docs.slice(0,30).map(d=>`<div class="doc-row"><div>
+    <div style="font-weight:700">${d.type==="agreement"?"📄 اتفاقية تقديم خدمات تأسيس و تسجيل استثماري":"🧾 إيصال استلام دفعة"}</div>
+    <div class="muted">${esc(d.company)}${d.partner?" — "+esc(d.partner):""} · ${esc(d.date)} · #${esc(d.orderNo||"")}</div>
+  </div><div style="display:flex;gap:6px">
+    <button class="mini" onclick="showDocumentById('${d.id}')">فتح</button>
+    <button class="mini danger" onclick="deleteDocument('${d.id}')">حذف</button>
+  </div></div>`).join(""):'<div class="empty">لا توجد مستندات محفوظة</div>';
+}
+function showDocumentById(id){const d=docs.find(x=>x.id===id);if(d)showDocument(d)}
+function deleteDocument(id){if(!requirePermission("documents","delete"))return;if(!confirm("حذف هذا المستند؟"))return;docs=docs.filter(x=>x.id!==id);persistDocs();renderDocuments();render();toast("تم الحذف")}
+
+function docHeader(){
+  return `<div class="doc-letterhead">
+    <div class="doc-top">
+      <div class="logo-side"><img src="${LOGO}" alt="MADA ELITE"><div class="co">MADA ELITE</div><div class="sub">BUSINESS SOLUTIONS</div></div>
+      <div class="slogan"><b>${BRAND.slogan}</b>${BRAND.sloganEn}</div>
+    </div>
+    <div class="letterhead-contact">
+      <span>📞 <b class="ltr">${esc(BRAND.phone)}</b></span>
+      <span>✉ <b class="ltr">${esc(BRAND.email)}</b></span>
+      <span>🌐 <b class="ltr">${esc(BRAND.web)}</b></span>
+      <span>📍 ${esc(BRAND.address)}</span>
+    </div>
+  </div>`;
+}
+function docFooter(){
+  return `<div class="doc-footer">
+    <div class="contact">
+      <span>📞 ${BRAND.phone}</span>
+      <span>✉ ${BRAND.email}</span>
+      <span>🌐 ${BRAND.web}</span>
+      <span>📍 ${BRAND.address}</span>
+      <span>سجل: ${BRAND.cr}</span>
+    </div>
+  </div>`;
+}
+
+function showDocument(d){
+  // Resolve missing legacy document fields from the selected company so old documents
+  // continue to display the current company contact details and the same order number.
+  const companyRecord=data.companies.find(x=>x.id===d.companyId)||{};
+  const fixedOrderNo=ensureCompanyOrderNo(companyRecord)||d.orderNo||"";
+  const currentPartners=(companyRecord.partners||[]);
+  d={...d,
+    company:companyRecord.name||d.company||"",
+    orderNo:fixedOrderNo,
+    cr:companyRecord.cr||d.cr||"",
+    activity:companyRecord.activity||d.activity||"",
+    companyPhone:companyRecord.phone||d.companyPhone||"",
+    companyEmail:companyRecord.email||d.companyEmail||"",
+    companyAddress:companyRecord.address||d.companyAddress||"",
+    partners:currentPartners.length?currentPartners.map(x=>({name:x.name,nationality:x.nationality||"",passport:x.passport||"",share:x.share||0})):d.partners
+  };
+  let html="";
+  if(d.type==="agreement"){
+    const ps=d.partners&&d.partners.length?d.partners:[{name:d.partner||"غير محدد",nationality:d.partnerNationality||"",passport:d.partnerPassport||"",share:""}];
+    const total=ps.reduce((s,p)=>s+Number(p.share||0),0);
+    const applicant=ps[0]?.name||d.partner||"غير محدد";
+    const rows=ps.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name||"")}</td><td>${esc(p.nationality||"")}</td><td class="ltr">${esc(p.passport||"")}</td><td>${p.share!==""&&p.share!=null?esc(p.share)+"%":"—"}</td></tr>`).join("");
+    html=`<div class="doc-sheet"><div class="doc-inner">
+      ${docHeader()}
+      <div class="doc-title-bar">اتفاقية تقديم خدمات تأسيس و تسجيل استثماري</div>
+      <div class="doc-meta"><span>رقم الطلب: <b class="ltr">${esc(d.orderNo||"—")}</b></span><span>التاريخ: <b>${fmtDate(d.date)}</b></span></div>
+      <div class="sec-title">بيانات الشركة</div>
+      <div class="sec-box"><table>
+        <tr><th>اسم الشركة</th><td><b>${esc(d.company||"—")}</b></td></tr>
+        <tr><th>رقم الطلب</th><td class="ltr">${esc(d.orderNo||"—")}</td></tr>
+        <tr><th>السجل التجاري</th><td class="ltr">${esc(d.cr||"غير مسجل")}</td></tr>
+        <tr><th>العنوان</th><td>${esc(d.companyAddress||"—")}</td></tr>
+        <tr><th>الجوال</th><td class="ltr">${esc(d.companyPhone||"—")}</td></tr>
+        <tr><th>البريد الإلكتروني</th><td class="ltr">${esc(d.companyEmail||"—")}</td></tr>
+      </table></div>
+      <div class="two-col">
+        <div>
+          <div class="sec-title">مقدم الطلب</div>
+          <div class="sec-box"><table>
+            <tr><th>نوع الطلب</th><td>${esc(d.service||"رخصة تجارية")}</td></tr>
+            <tr><th>مقدم الطلب</th><td><b>${esc(applicant)}</b></td></tr>
+            <tr><th>الطرف الثاني</th><td>المستثمرون (بنسبة إجمالية ${total}%)</td></tr>
+          </table>
+          <table class="partner-table" style="margin:8px"><thead><tr><th>م</th><th>اسم ولقب المستثمر</th><th>الجنسية</th><th>رقم الجواز</th><th>النسبة</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+          <p style="font-size:10px;padding:4px 8px;color:#666">ويشار إليهم مجتمعين بـ «الطرف الثاني».</p></div>
+        </div>
+        <div>
+          <div class="sec-title">أولاً: أطراف الاتفاقية</div>
+          <div class="sec-box"><table>
+            <tr><th>الطرف الأول</th><td>شركة MADA ELITE (${BRAND.nameAr})</td></tr>
+            <tr><th>السجل التجاري</th><td class="ltr">${BRAND.cr}</td></tr>
+            <tr><th>العنوان</th><td style="font-size:10px">${BRAND.addressFull}</td></tr>
+            <tr><th>المقر الرئيسي</th><td>${BRAND.address}</td></tr>
+          </table></div>
+        </div>
+      </div>
+      <div class="sec-title">نوع الخدمة والأتعاب</div>
+      <div class="sec-box"><table>
+        <tr><th>إجمالي أتعاب الطرف الأول</th><td class="ltr hl">${money(d.price)} ر.س</td></tr>
+        <tr><th>الخصم</th><td class="ltr">${money(d.discount||0)} ر.س</td></tr>
+        <tr><th>المبلغ النهائي بعد الخصم</th><td class="ltr hl">${money(d.discounted)} ر.س</td></tr>
+        <tr><th>الدفعة الأولى عند توقيع الاتفاقية</th><td class="ltr">${money(d.pay1)} ر.س</td></tr>
+        <tr><th>الدفعة الثانية عند إتمام الخدمة</th><td class="ltr">${money(d.pay2)} ر.س</td></tr>
+      </table></div>
+      <div class="clause"><b>رابعاً: الرسوم الحكومية والمصاريف الخارجية</b><br>
+      لا تشمل أتعاب الطرف الأول أي رسوم حكومية أو رسوم منصات أو رسوم جهات خارجية (عقد التأسيس، السجل التجاري، الموافقات، التصديقات، الترجمات...) وتكون على عاتق الطرف الثاني حسب قيمتها الفعلية.</div>
+      <div class="clause"><b>خامساً: مدة تنفيذ الأعمال</b><br>
+      المدة التقديرية 45 يوم عمل، وتبدأ من تاريخ استلام الطرف الأول كامل المستندات المطلوبة والدفعة الأولى. وقد تمتد حسب أنظمة الجهات ذات العلاقة.</div>
+      <div class="clause"><b>سادساً: التزامات الطرف الثاني</b><br>
+      تقديم المستندات المطلوبة والكاملة، سداد الرسوم الحكومية والخارجية، وسداد الدفعات في مواعيدها، والتعاون مع الطرف الأول.</div>
+      <div class="clause"><b>سابعاً: طريقة الدفع</b><br>
+      يتم الدفع نقداً أو تحويل بنكي على الحساب الرسمي لشركة مادا إيليت لدى ${BRAND.bank}.
+      <div class="bank-row" style="margin-top:6px"><span>${BRAND.bank} (${BRAND.bankCode})</span><span class="iban">IBAN: ${BRAND.iban}</span></div></div>
+      <div class="clause"><b>ثامناً: الإقرار بالموافقة</b><br>
+      يقر الطرفان بأنهما قرآ جميع بنود الاتفاقية وفهما مضمونها واتفقا عليها. وأي تعديل يجب أن يكون كتابياً وموقعاً من الطرفين.</div>
+      ${d.notes?`<div class="clause"><b>ملاحظات إضافية</b><br>${esc(d.notes)}</div>`:""}
+      <div class="sigs">
+        <div class="sig-box"><b>الطرف الثاني (المستثمرون)</b>الاسم: ${esc(applicant)}<br>التوقيع: _______________<br>التاريخ: ${fmtDate(d.date)}</div>
+        <div class="sig-box"><b>الطرف الأول — شركة MADA ELITE</b>الاسم: _______________<br>التوقيع: _______________<br>التاريخ: ${fmtDate(d.date)}</div>
+      </div>
+      ${docFooter()}
+    </div></div>`;
+  } else {
+    const remain=d.receiptRemain||((d.receiptTotal||d.discounted||0)-(d.amount||0));
+    const totalAgr=d.receiptTotal||d.discounted||d.price||0;
+    html=`<div class="doc-sheet"><div class="doc-inner">
+      ${docHeader()}
+      <div class="doc-title-bar">إيصال استلام دفعة</div>
+      <div class="doc-meta"><span>رقم الإيصال: <b class="ltr">${esc(d.orderNo||"غير محدد")}</b></span><span>التاريخ: <b>${fmtDate(d.date)}</b></span></div>
+      <div class="sec-title">بيانات العميل</div>
+      <div class="sec-box"><table>
+        <tr><th>الاسم</th><td><b>${esc(d.partner||"غير محدد")}</b></td></tr>
+        <tr><th>الجنسية</th><td>${esc(d.partnerNationality||"—")}</td></tr>
+        <tr><th>رقم الجواز</th><td class="ltr">${esc(d.partnerPassport||"—")}</td></tr>
+        <tr><th>الشركة</th><td>${esc(d.company)}</td></tr>
+        <tr><th>رقم الطلب</th><td class="ltr">${esc(d.orderNo||"—")}</td></tr>
+        <tr><th>السجل التجاري</th><td class="ltr">${esc(d.cr||"غير مسجل")}</td></tr>
+        <tr><th>العنوان</th><td>${esc(d.companyAddress||"—")}</td></tr>
+        <tr><th>الجوال</th><td class="ltr">${esc(d.companyPhone||"—")}</td></tr>
+        <tr><th>البريد الإلكتروني</th><td class="ltr">${esc(d.companyEmail||"—")}</td></tr>
+      </table></div>
+      <div class="sec-title">تفاصيل الدفعة</div>
+      <div class="sec-box"><table>
+        <tr><th>إجمالي قيمة الاتفاقية</th><td class="ltr">${money(totalAgr)} ر.س</td></tr>
+        <tr class="hl"><th>الدفعة المستلمة</th><td class="ltr"><b>${money(d.amount)} ر.س</b></td></tr>
+        <tr><th>المبلغ المتبقي</th><td class="ltr">${money(remain)} ر.س</td></tr>
+        <tr><th>طريقة الدفع</th><td>${esc(d.method||"تحويل بنكي")}</td></tr>
+        <tr><th>التاريخ</th><td>${fmtDate(d.date)}</td></tr>
+      </table></div>
+      <div class="sec-title">بيانات الحساب البنكي للشركة</div>
+      <div class="sec-box"><div class="bank-row">
+        <span><b>${BRAND.bank}</b> (${BRAND.bankCode})</span>
+        <span class="iban">IBAN: ${BRAND.iban}</span>
+      </div></div>
+      <div class="clause"><b>ملاحظات</b><br>
+        ① تم استلام مبلغ وقدره <b>${money(d.amount)}</b> ريال سعودي فقط، وذلك كدفعة من قيمة اتفاقية تقديم الخدمات.<br>
+        ② المبلغ المتبقي <b>${money(remain)}</b> ريال سعودي يستحق سداده وفقاً لما ورد في بنود الاتفاقية.<br>
+        ③ هذا الإيصال لا يعد إبراءً نهائياً من الالتزامات إلا بعد استكمال كافة المدفوعات وإنهاء الإجراءات.
+      </div>
+      <div class="sigs">
+        <div class="sig-box"><b>الطرف الثاني (المستثمرون)</b>الاسم: ${esc(d.partner||"")}<br>التوقيع: _______________<br>التاريخ: ${fmtDate(d.date)}</div>
+        <div class="sig-box"><b>الطرف الأول — شركة MADA ELITE</b>الاسم: _______________<br>التوقيع: _______________<br>التاريخ: ${fmtDate(d.date)}</div>
+      </div>
+      ${docFooter()}
+    </div></div>`;
+  }
+  currentPreviewHtml=html;
+  document.getElementById("docPreview").innerHTML=html;
+  document.getElementById("docPreviewModal").classList.add("show");
+}
+
+function printDocument(){document.getElementById("printArea").innerHTML=currentPreviewHtml||document.getElementById("docPreview").innerHTML;window.print()}
+function printCompanyDetails(){
+  const c=data.companies.find(x=>x.id===selectedCompanyId);if(!c)return;
+  const total=(c.partners||[]).reduce((s,p)=>s+(+p.share||0),0);
+  const rows=(c.partners||[]).map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.nationality||"")}</td><td class="ltr">${esc(p.passport||"")}</td><td class="ltr">${esc(p.phone||"")}</td><td>${p.share||0}%</td></tr>`).join("");
+  const html=`<div class="doc-sheet"><div class="doc-inner">${docHeader()}
+    <div class="doc-title-bar">تقرير شركة — ${esc(c.name)}</div>
+    <div class="sec-title">بيانات الشركة</div>
+    <div class="sec-box"><table>
+      <tr><th>اسم الشركة</th><td><b>${esc(c.name||"—")}</b></td></tr>
+      <tr><th>رقم الطلب</th><td class="ltr">${esc(c.orderNo||"—")}</td></tr>
+      <tr><th>المجموعة</th><td>${esc(c.group||"—")}</td></tr>
+      <tr><th>السجل التجاري</th><td class="ltr">${esc(c.cr||"غير مسجل")}</td></tr>
+      <tr><th>النشاط</th><td>${esc(c.activity||"—")}</td></tr>
+      <tr><th>العنوان</th><td>${esc(c.address||"—")}</td></tr>
+      <tr><th>الجوال</th><td class="ltr">${esc(c.phone||"—")}</td></tr>
+      <tr><th>البريد الإلكتروني</th><td class="ltr">${esc(c.email||"—")}</td></tr>
+      <tr><th>مجموع النسب</th><td>${total}%</td></tr>
+    </table></div>
+    <div class="sec-title">الشركاء</div>
+    <div class="sec-box"><table class="partner-table"><thead><tr><th>#</th><th>الاسم</th><th>الجنسية</th><th>الجواز</th><th>الجوال</th><th>النسبة</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="6">لا يوجد</td></tr>'}</tbody></table></div>
+    ${docFooter()}</div></div>`;
+  document.getElementById("printArea").innerHTML=html;window.print();
+}
+
+
+function passportBlock(p){
+  if(!p.passportFile)return '';
+  const src=String(p.passportFile);
+  if(src.startsWith('data:image/')) return `<div class="passport-card"><div><b>صورة جواز: ${esc(p.name||'')}</b><div class="muted">رقم الجواز: <span class="ltr">${esc(p.passport||'—')}</span></div></div><img src="${src}" alt="جواز السفر"></div>`;
+  return `<div class="passport-card passport-note"><b>ملف جواز: ${esc(p.name||'')}</b><div>رقم الجواز: <span class="ltr">${esc(p.passport||'—')}</span></div><div class="muted">الملف المرفوع بصيغة PDF أو ملف غير صوري، وسيبقى محفوظًا في بيانات الشريك.</div></div>`;
+}
+
+function exportCompanyPDF(){
+  if(!requirePermission('companies','view'))return;
+  const c=data.companies.find(x=>x.id===selectedCompanyId);
+  if(!c){toast('اختر شركة أولاً');return}
+  const ps=c.partners||[], total=ps.reduce((sum,p)=>sum+Number(p.share||0),0);
+  const financial=(data.financial||[]).filter(x=>String(x.companyId)===String(c.id));
+  const companyDocs=docs.filter(x=>String(x.companyId)===String(c.id));
+  const income=financial.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
+  const expense=financial.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
+  const partnerRows=ps.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name||'')}</td><td>${esc(p.nationality||'—')}</td><td class="ltr">${esc(p.passport||'—')}</td><td class="ltr">${esc(p.phone||'—')}</td><td class="ltr">${esc(p.email||'—')}</td><td>${esc(p.address||'—')}</td><td>${esc(p.expiry||'—')}</td><td>${esc(p.share??0)}%</td></tr>`).join('');
+  const financialRows=financial.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.date||'—')}</td><td>${x.type==='income'?'إيراد':'مصروف'}</td><td>${esc(x.category||'—')}</td><td>${esc(x.description||'—')}</td><td class="ltr">${money(x.amount)} ريال</td><td>${esc(x.status||'—')}</td></tr>`).join('');
+  const docRows=companyDocs.map((d,i)=>`<tr><td>${i+1}</td><td>${d.type==='agreement'?'اتفاقية تقديم خدمات تأسيس و تسجيل استثماري':'إيصال استلام دفعة'}</td><td>${esc(d.date||'—')}</td><td class="ltr">${esc(d.orderNo||c.orderNo||'—')}</td><td>${esc(d.partner||'—')}</td><td class="ltr">${money(d.amount||d.discounted||0)} ريال</td></tr>`).join('');
+  const passports=ps.map(passportBlock).join('');
+  const html=`<div class="company-export">${docHeader()}<div class="doc-title-bar">ملف الشركة الكامل</div>
+    <div class="doc-meta"><span>رقم الطلب: <b class="ltr">${esc(c.orderNo||'—')}</b></span><span>تاريخ الملف: <b>${fmtDate(new Date().toISOString().slice(0,10))}</b></span></div>
+    <div class="sec-title">1. بيانات الشركة</div><div class="sec-box"><table class="info-table">
+      <tr><th>اسم الشركة</th><td>${esc(c.name||'—')}</td><th>المجموعة</th><td>${esc(c.group||'—')}</td></tr>
+      <tr><th>السجل التجاري</th><td class="ltr">${esc(c.cr||'غير مسجل')}</td><th>النشاط</th><td>${esc(c.activity||'—')}</td></tr>
+      <tr><th>العنوان</th><td colspan="3">${esc(c.address||'—')}</td></tr>
+      <tr><th>الجوال</th><td class="ltr">${esc(c.phone||'—')}</td><th>البريد</th><td class="ltr">${esc(c.email||'—')}</td></tr>
+      <tr><th>ملاحظات</th><td colspan="3">${esc(c.notes||'—')}</td></tr></table></div>
+    <div class="sec-title">2. الشركاء</div><div class="sec-box"><table class="partner-table"><thead><tr><th>#</th><th>الاسم</th><th>الجنسية</th><th>الجواز</th><th>الجوال</th><th>البريد</th><th>العنوان</th><th>انتهاء الجواز</th><th>النسبة</th></tr></thead><tbody>${partnerRows||'<tr><td colspan="9">لا يوجد شركاء</td></tr>'}</tbody></table><p style="margin-top:8px;font-weight:800">مجموع نسب الشراكة: ${total}%</p></div>
+    <div class="sec-title">3. القسم المالي</div><div class="sec-box"><div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px"><b>الإيرادات: ${money(income)} ريال</b><b>المصروفات: ${money(expense)} ريال</b><b>الصافي: ${money(income-expense)} ريال</b></div><table class="partner-table"><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th><th>التصنيف</th><th>البيان</th><th>المبلغ</th><th>الحالة</th></tr></thead><tbody>${financialRows||'<tr><td colspan="7">لا توجد عمليات مالية</td></tr>'}</tbody></table></div>
+    <div class="sec-title">4. المستندات</div><div class="sec-box"><table class="partner-table"><thead><tr><th>#</th><th>المستند</th><th>التاريخ</th><th>رقم الطلب</th><th>الشريك</th><th>القيمة</th></tr></thead><tbody>${docRows||'<tr><td colspan="6">لا توجد مستندات محفوظة</td></tr>'}</tbody></table></div>
+    ${passports?`<div class="sec-title">5. صور جوازات الشركاء</div><div class="passport-grid">${passports}</div>`:''}
+    ${docFooter()}</div>`;
+  document.getElementById('printArea').innerHTML=html;
+  const oldTitle=document.title; document.title='MADA ELITE - ملف شركة - '+(c.name||'شركة');
+  window.print();
+  setTimeout(()=>{document.title=oldTitle},1000);
+}
+
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("show")}));
+
+function exportData(){const blob=new Blob([JSON.stringify({data,docs,exportedAt:new Date().toISOString()},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="MADA_ELITE_backup_"+new Date().toISOString().slice(0,10)+".json";a.click();toast("تم تنزيل النسخة الاحتياطية")}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(x.data&&Array.isArray(x.data.companies)){data=x.data;persist()}else if(Array.isArray(x.companies)){data=x;persist()}if(Array.isArray(x.docs)){docs=x.docs;persistDocs()}render();renderDocuments();toast("تم استيراد البيانات")}catch(err){alert("ملف غير صالح")}};r.readAsText(f);e.target.value=""}
+
+function jsonpRequest(action, extra={}){return new Promise((resolve,reject)=>{const u=localStorage.getItem(REMOTE_URL_KEY),t=localStorage.getItem(REMOTE_TOKEN_KEY);if(!u||!t)return reject(new Error("missing_config"));const cb="madaEliteCb_"+Date.now()+"_"+Math.random().toString(36).slice(2);const script=document.createElement("script");const params=new URLSearchParams({action,token:t,callback:cb,...extra});let timer=setTimeout(()=>{cleanup();reject(new Error("timeout"))},15000);function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}window[cb]=(result)=>{cleanup();resolve(result)};script.onerror=()=>{cleanup();reject(new Error("network"))};script.src=u+(u.includes("?")?"&":"?")+params.toString();document.body.appendChild(script)})}
+function postNoCors(action,payload={}){const u=localStorage.getItem(REMOTE_URL_KEY),t=localStorage.getItem(REMOTE_TOKEN_KEY);if(!u||!t)return false;fetch(u,{method:"POST",mode:"no-cors",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,token:t,...payload})}).catch(()=>{});return true}
+async function saveSyncSettings(){const u=document.getElementById("apiUrl").value.trim(),t=document.getElementById("apiToken").value.trim(),msg=document.getElementById("syncMsg");if(!u||!t){msg.textContent="أدخل الرابط ورمز الربط.";return}localStorage.setItem(REMOTE_URL_KEY,u);localStorage.setItem(REMOTE_TOKEN_KEY,t);msg.textContent="جاري اختبار الاتصال...";try{const j=await jsonpRequest("ping");if(j&&j.ok){setSyncStatus(true,"متصل بالسحابة");msg.textContent="تم الاتصال بنجاح.";postNoCors("saveData",{data});toast("تم الربط والحفظ")}else throw new Error(j&&j.error||"فشل")}catch(e){setSyncStatus(false,"فشل الاتصال");msg.textContent="تعذر الاتصال. تحقق من رمز الربط."}}
+function setSyncStatus(ok,text){const e=document.getElementById("syncStatus");if(!e)return;e.textContent=text;e.className="syncstatus "+(ok?"syncok":"syncbad")}
+async function syncDataToCloud(showToast=true){const ok=postNoCors("saveData",{data});if(ok){setSyncStatus(true,"تم إرسال البيانات للسحابة");if(showToast)toast("تم إرسال البيانات إلى Google")}}
+async function syncNow(){await syncDataToCloud(true)}
+async function loadDataFromCloud(){try{const j=await jsonpRequest("loadData");if(j.ok&&j.data&&Array.isArray(j.data.companies)){data=j.data;localStorage.setItem(KEY,JSON.stringify(data));render();setSyncStatus(true,"متصل بالسحابة")}}catch(e){setSyncStatus(false,"تعذر تحميل السحابة")}}
+
+function fillShareCompanies(){const el=document.getElementById("shareCompany");if(!el)return;el.innerHTML=data.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")||'<option value="">لا توجد شركات</option>'}
+function makeShareLink(){const cid=document.getElementById("shareCompany").value,person=document.getElementById("sharePerson").value.trim();if(!cid){toast("اختر شركة");return}const shareToken=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()).replace(/-/g,"");postNoCors("createClientLink",{companyId:cid,shareToken});const url=location.href.split("?")[0]+"?client=1&share="+encodeURIComponent(shareToken)+(person?"&name="+encodeURIComponent(person):"");document.getElementById("shareUrl").value=url;toast("تم إنشاء رابط العميل")}
+function clientJsonp(action,extra={}){return new Promise((resolve,reject)=>{const u=localStorage.getItem(REMOTE_URL_KEY);if(!u)return reject(new Error("missing_url"));const cb="madaClientCb_"+Date.now()+"_"+Math.random().toString(36).slice(2);const script=document.createElement("script");const params=new URLSearchParams({action,callback:cb,...extra});let timer=setTimeout(()=>{cleanup();reject(new Error("timeout"))},15000);function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}window[cb]=(result)=>{cleanup();resolve(result)};script.onerror=()=>{cleanup();reject(new Error("network"))};script.src=u+(u.includes("?")?"&":"?")+params.toString();document.body.appendChild(script)})}
+async function copyShareLink(){const x=document.getElementById("shareUrl").value;if(!x)return toast("أنشئ الرابط أولاً");try{await navigator.clipboard.writeText(x);toast("تم نسخ الرابط")}catch{document.getElementById("shareUrl").select();document.execCommand("copy");toast("تم نسخ الرابط")}}
+
+async function clientPage(){
+  const params=new URLSearchParams(location.search);const share=params.get("share")||"";const preName=params.get("name")||"";let c=null;
+  if(share){try{const j=await clientJsonp("getClientContext",{shareToken:share});if(j.ok)c=j.company}catch(e){}}
+  const cid=c&&c.id?c.id:"";
+  document.body.innerHTML=`<div class="clientPage"><div class="clientCard">
+    <div style="text-align:center;margin-bottom:16px"><img src="${LOGO}" style="width:100px;height:100px;object-fit:contain;margin:0 auto 8px;display:block">
+    <h2 style="color:#b88a2a">MADA ELITE</h2><p class="muted">${c?"تعبئة بيانات الشريك — "+esc(c.name):"تعبئة بيانات العميل"}</p>
+    <p class="muted" style="font-size:11px">${BRAND.tagline}</p></div>
+    <div class="formgrid">
+      <div class="field"><label>الاسم الكامل *</label><input id="clName" value="${esc(preName)}"></div>
+      <div class="field"><label>رقم الجواز *</label><input id="clPassport"></div>
+      <div class="field"><label>الجنسية</label><input id="clNationality"></div>
+      <div class="field"><label>انتهاء الجواز</label><input id="clExpiry" type="date"></div>
+      <div class="field"><label>الجوال *</label><input id="clPhone"></div>
+      <div class="field"><label>البريد</label><input id="clEmail" type="email"></div>
+      <div class="field full"><label>العنوان</label><input id="clAddress"></div>
+      <div class="field"><label>نسبة الشراكة %</label><input id="clShare" type="number" min="0" max="100" value="0"></div>
+      <div class="field"><label>رفع الجواز</label><input id="clFile" type="file" accept="image/*,.pdf"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="gold" onclick="submitClient('${esc(cid||"")}','${esc(share||"")}')">إرسال البيانات</button>
+      <button class="secondary" onclick="location.href=location.pathname">إلغاء</button>
+    </div>
+    <div id="clientMsg" class="muted" style="margin-top:12px"></div>
+  </div></div>`;
+}
+function submitClient(cid,shareToken){
+  const payload={companyId:cid,shareToken:shareToken,name:clName.value.trim(),passport:clPassport.value.trim(),nationality:clNationality.value.trim(),expiry:clExpiry.value,phone:clPhone.value.trim(),email:clEmail.value.trim(),address:clAddress.value.trim(),share:+clShare.value||0,submittedAt:new Date().toISOString()};
+  if(!payload.name||!payload.passport||!payload.phone){document.getElementById("clientMsg").textContent="يرجى تعبئة الاسم والجواز والجوال.";return}
+  const f=document.getElementById("clFile").files[0];
+  if(f){const r=new FileReader();r.onload=()=>{payload.fileName=f.name;payload.fileData=r.result;finishClient(payload)};r.readAsDataURL(f)}else finishClient(payload);
+}
+async function finishClient(payload){
+  const c=data.companies.find(x=>x.id===payload.companyId);
+  if(c){if(!c.partners)c.partners=[];c.partners.push({id:crypto.randomUUID(),name:payload.name,passport:payload.passport,nationality:payload.nationality,expiry:payload.expiry,phone:payload.phone,email:payload.email,address:payload.address,share:payload.share,passportFile:payload.fileData||""});persist()}
+  const u=localStorage.getItem(REMOTE_URL_KEY);if(u&&payload.shareToken){fetch(u,{method:"POST",mode:"no-cors",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"clientSubmit",shareToken:payload.shareToken,payload})}).catch(()=>{});document.getElementById("clientMsg").textContent="تم إرسال البيانات إلى MADA ELITE.";return}
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="MADA_ELITE_client_"+Date.now()+".json";a.click();
+  document.getElementById("clientMsg").textContent=c?"تم حفظ البيانات محلياً.":"تم تجهيز ملف البيانات.";
+}
+
+(function init(){
+  if(new URLSearchParams(location.search).has("client")){clientPage();return}
+  document.getElementById("app").style.display="flex";
+  render();syncEmployeeSelectors();applyPermissions();loadDataFromCloud();
+})();
+</script>
+</body>
+</html>
