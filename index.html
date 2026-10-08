@@ -163,6 +163,7 @@ label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5
       <input id="globalSearch" class="search" placeholder="ابحث عن شركة، شريك، جواز، جوال، أو مجموعة..." oninput="onSearch()">
       <div class="top-actions">
         <select id="currentEmployee" title="المستخدم الحالي" onchange="setCurrentEmployee(this.value)" style="width:auto;min-width:180px"></select>
+        <button class="gold" onclick="saveAllNow()">💾 حفظ البيانات</button>
         <button class="secondary" onclick="exportData()">⬇ نسخة احتياطية</button>
         <button class="secondary" onclick="document.getElementById('importFile').click()">⬆ استعادة</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
@@ -506,6 +507,10 @@ const KEY = "mada_elite_v3_data";
 const DOC_KEY = "mada_elite_v3_docs";
 const REMOTE_URL_KEY = "mada_elite_v3_remote_url";
 const REMOTE_TOKEN_KEY = "mada_elite_v3_remote_token";
+const LOCAL_DB_NAME = "MADA_ELITE_DB";
+const LOCAL_DB_STORE = "state";
+const LOCAL_DB_KEY = "main";
+let localSaveChain = Promise.resolve();
 
 let data = JSON.parse(localStorage.getItem(KEY) || "null") || {companies:[],employees:[],financial:[]};
 data.companies = Array.isArray(data.companies)?data.companies:[];
@@ -528,10 +533,63 @@ function setCurrentEmployee(id){currentEmployeeId=id||OWNER_ID;localStorage.setI
 function syncEmployeeSelectors(){const opts='<option value="'+OWNER_ID+'">المالك / المدير — كامل الصلاحيات</option>'+data.employees.map(e=>'<option value="'+e.id+'">'+esc(e.name)+(e.active===false?' — موقوف':'')+'</option>').join("");[document.getElementById("currentEmployee"),document.getElementById("employeePageCurrent")].forEach(el=>{if(el){el.innerHTML=opts;el.value=employeeById(currentEmployeeId)?currentEmployeeId:OWNER_ID}})}
 function applyPermissions(){const map={companies:"companies",partners:"partners",financial:"financial",employees:"employees",documents:"documents"};Object.entries(map).forEach(([module,cls])=>{document.querySelectorAll(".perm-add-"+cls).forEach(el=>el.style.display=canAction(module,"add")?"":"none")});document.querySelectorAll("[data-perm]").forEach(el=>{const [m,a]=el.dataset.perm.split(":");el.style.display=canAction(m,a)?"":"none"})}
 
-function persist(){localStorage.setItem(KEY,JSON.stringify(data));if(localStorage.getItem(REMOTE_URL_KEY))syncDataToCloud(false)}
-function persistDocs(){
+function openLocalDB(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB){resolve(null);return}
+    const req=indexedDB.open(LOCAL_DB_NAME,1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(LOCAL_DB_STORE))req.result.createObjectStore(LOCAL_DB_STORE)};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>resolve(null);
+  });
+}
+function queueLocalSave(){
+  localSaveChain=localSaveChain.then(async()=>{
+    const db=await openLocalDB();
+    if(!db)return;
+    await new Promise(resolve=>{
+      const tx=db.transaction(LOCAL_DB_STORE,"readwrite");
+      tx.objectStore(LOCAL_DB_STORE).put({data,docs,savedAt:new Date().toISOString()},LOCAL_DB_KEY);
+      tx.oncomplete=()=>{db.close();resolve()};
+      tx.onerror=()=>{db.close();resolve()};
+    });
+  }).catch(()=>{});
+  return localSaveChain;
+}
+async function loadLocalDB(){
+  const db=await openLocalDB();
+  if(!db)return null;
+  return await new Promise(resolve=>{
+    const tx=db.transaction(LOCAL_DB_STORE,"readonly"),req=tx.objectStore(LOCAL_DB_STORE).get(LOCAL_DB_KEY);
+    req.onsuccess=()=>{const v=req.result||null;db.close();resolve(v)};
+    req.onerror=()=>{db.close();resolve(null)};
+  });
+}
+function normalizeState(){
+  data=data&&typeof data==="object"?data:{};
+  data.companies=Array.isArray(data.companies)?data.companies:[];
+  data.employees=Array.isArray(data.employees)?data.employees:[];
+  data.financial=Array.isArray(data.financial)?data.financial:[];
+  docs=Array.isArray(docs)?docs:[];
+}
+async function saveAllNow(){
+  normalizeState();
+  localStorage.setItem(KEY,JSON.stringify(data));
   localStorage.setItem(DOC_KEY,JSON.stringify(docs));
-  if(localStorage.getItem(REMOTE_URL_KEY)) postNoCors("saveDocuments",{docs});
+  await queueLocalSave();
+  const hasCloud=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
+  if(hasCloud) await syncDataToCloud(true);
+  else toast("تم حفظ البيانات على هذا الجهاز");
+  render();renderDocuments();syncEmployeeSelectors();applyPermissions();
+}
+function persist(){
+  normalizeState();
+  localStorage.setItem(KEY,JSON.stringify(data));
+  queueLocalSave();
+}
+function persistDocs(){
+  docs=Array.isArray(docs)?docs:[];
+  localStorage.setItem(DOC_KEY,JSON.stringify(docs));
+  queueLocalSave();
 }
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function money(n){return Number(n||0).toLocaleString("en-US")}
@@ -1289,21 +1347,32 @@ async function finishClient(payload){
   document.getElementById("clientMsg").textContent=c?"تم حفظ البيانات محلياً.":"تم تجهيز ملف البيانات.";
 }
 
-(function init(){
+async function bootstrapLocalState(){
+  const saved=await loadLocalDB();
+  if(saved&&saved.data){
+    data=saved.data;
+    docs=saved.docs||[];
+    normalizeState();
+    localStorage.setItem(KEY,JSON.stringify(data));
+    localStorage.setItem(DOC_KEY,JSON.stringify(docs));
+    return true;
+  }
+  normalizeState();
+  await queueLocalSave();
+  return false;
+}
+
+(async function init(){
   if(new URLSearchParams(location.search).has("client")){clientPage();return}
   document.getElementById("app").style.display="flex";
+  await bootstrapLocalState();
   const hasCloud=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
   if(hasCloud){
     setSyncStatus(true,"جاري تحميل السحابة...");
-    loadDataFromCloud().then(ok=>{
-      if(!ok){
-        render();syncEmployeeSelectors();applyPermissions();
-        toast("تعذر تحميل السحابة — تم عرض البيانات المحلية");
-      }
-    });
-  }else{
-    render();syncEmployeeSelectors();applyPermissions();
+    const ok=await loadDataFromCloud(false);
+    if(!ok)toast("تعذر تحميل السحابة — تم الاحتفاظ بالبيانات المحلية");
   }
+  render();syncEmployeeSelectors();applyPermissions();
 })();
 </script>
 </body>
