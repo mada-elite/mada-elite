@@ -1243,57 +1243,98 @@ function importSyncConfig(e){
   r.readAsText(f);
   e.target.value="";
 }
-async function syncDataToCloud(showToast=true){
+async async function syncDataToCloud(showToast=true){
+  const hasConfig=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
+  if(!hasConfig){setSyncStatus(false,"غير مربوط");if(showToast)toast("اربط السحابة أولاً");return false}
+  normalizeState();
   const ok=postNoCors("saveData",{data});
   const docsOk=postNoCors("saveDocuments",{docs});
-  if(ok||docsOk){
-    setSyncStatus(true,"تم إرسال البيانات للسحابة");
-    if(showToast)toast("تم إرسال البيانات والمستندات إلى Google");
+  if(!ok&&!docsOk){setSyncStatus(false,"تعذر إرسال البيانات");if(showToast)toast("تعذر إرسال البيانات للسحابة");return false}
+
+  setSyncStatus(true,"جاري التحقق من الحفظ السحابي...");
+  for(let attempt=0;attempt<4;attempt++){
+    await new Promise(r=>setTimeout(r,1000));
+    try{
+      const j=await jsonpRequest("loadData");
+      if(j&&j.ok&&j.data&&JSON.stringify(j.data)===JSON.stringify(data)){
+        setSyncStatus(true,"تم حفظ البيانات في السحابة");
+        if(showToast)toast("تم حفظ "+data.companies.length+" شركة في السحابة بنجاح");
+        return true;
+      }
+    }catch(e){}
   }
+  setSyncStatus(false,"لم يتم التحقق من الحفظ السحابي");
+  if(showToast)toast("لم نتمكن من التحقق من حفظ البيانات. لم نحذف بيانات الجهاز.");
+  return false;
 }
 async function syncNow(){
   if(!localStorage.getItem(REMOTE_URL_KEY)||!localStorage.getItem(REMOTE_TOKEN_KEY)){
     toast("اربط السحابة أولاً");
     return false;
   }
-  await syncDataToCloud(true);
-  return true;
+  return await syncDataToCloud(true);
 }
 async function loadDataFromCloud(confirmReplace=false){
   try{
     const j=await jsonpRequest("loadData");
-    if(j.ok&&j.data&&Array.isArray(j.data.companies)){
-      const cloudData=j.data;
-      const localCount=Array.isArray(data.companies)?data.companies.length:0;
-      const cloudCount=Array.isArray(cloudData.companies)?cloudData.companies.length:0;
-      if(confirmReplace && localCount>0 && JSON.stringify(data)!==JSON.stringify(cloudData)){
-        const ok=confirm("سيتم استبدال بيانات الجهاز الحالية ببيانات السحابة. إذا كانت بيانات هذا الجهاز هي الأحدث اختر إلغاء ثم استخدم «رفع بيانات الجهاز للسحابة». هل تريد تحميل السحابة؟");
-        if(!ok){document.getElementById("syncMsg").textContent="تم إلغاء تحميل السحابة ولم تتغير بيانات الجهاز.";return false}
-      }
-      data=cloudData;
-      data.companies=Array.isArray(data.companies)?data.companies:[];
-      data.employees=Array.isArray(data.employees)?data.employees:[];
-      data.financial=Array.isArray(data.financial)?data.financial:[];
-      localStorage.setItem(KEY,JSON.stringify(data));
-      render();syncEmployeeSelectors();applyPermissions();
-      setSyncStatus(true,"متصل بالسحابة");
-      await loadDocumentsFromCloud();
-      document.getElementById("syncMsg").textContent="تم تحميل بيانات السحابة بنجاح ("+cloudCount+" شركة).";
-      return true;
+    if(!(j&&j.ok&&j.data&&Array.isArray(j.data.companies)))throw new Error(j&&j.error||"cloud_load_failed");
+
+    const cloudData=j.data;
+    const localCount=Array.isArray(data.companies)?data.companies.length:0;
+    const cloudCount=Array.isArray(cloudData.companies)?cloudData.companies.length:0;
+    const different=JSON.stringify(data)!==JSON.stringify(cloudData);
+
+    // Never allow an empty cloud database to erase local data.
+    if(cloudCount===0 && localCount>0 && different){
+      setSyncStatus(true,"السحابة فارغة — لم يتم تغيير بيانات الجهاز");
+      document.getElementById("syncMsg").textContent="السحابة لا تحتوي شركات، لذلك تم منع استبدال بيانات الجهاز الحالية. استخدم «رفع بيانات الجهاز للسحابة» إذا كانت هذه هي البيانات الصحيحة.";
+      return false;
     }
-    throw new Error(j&&j.error||"cloud_load_failed");
+
+    // Automatic startup load is read-only when the device already has data.
+    if(!confirmReplace && localCount>0 && different){
+      setSyncStatus(true,"متصل بالسحابة — البيانات المحلية محفوظة");
+      document.getElementById("syncMsg").textContent="توجد بيانات محلية مختلفة؛ لم يتم استبدالها تلقائيًا.";
+      return false;
+    }
+
+    if(confirmReplace && localCount>0 && different){
+      const ok=confirm("سيتم استبدال بيانات الجهاز الحالية ببيانات السحابة. هل تريد المتابعة؟");
+      if(!ok){document.getElementById("syncMsg").textContent="تم إلغاء التحميل ولم تتغير بيانات الجهاز.";return false}
+    }
+
+    data=cloudData;
+    data.companies=Array.isArray(data.companies)?data.companies:[];
+    data.employees=Array.isArray(data.employees)?data.employees:[];
+    data.financial=Array.isArray(data.financial)?data.financial:[];
+    localStorage.setItem(KEY,JSON.stringify(data));
+    await queueLocalSave();
+    render();syncEmployeeSelectors();applyPermissions();
+    setSyncStatus(true,"متصل بالسحابة");
+    await loadDocumentsFromCloud(confirmReplace);
+    document.getElementById("syncMsg").textContent="تم تحميل بيانات السحابة بنجاح ("+cloudCount+" شركة).";
+    return true;
   }catch(e){
     setSyncStatus(false,"تعذر تحميل السحابة");
     document.getElementById("syncMsg").textContent="تعذر تحميل بيانات السحابة.";
     return false;
   }
 }
-async function loadDocumentsFromCloud(){
+async function loadDocumentsFromCloud(confirmReplace=false){
   try{
     const j=await jsonpRequest("loadDocuments");
     if(j&&j.ok&&Array.isArray(j.docs)){
-      docs=j.docs;
+      const cloudDocs=j.docs;
+      if(cloudDocs.length===0 && docs.length>0 && !confirmReplace){
+        return;
+      }
+      if(confirmReplace && docs.length>0 && JSON.stringify(docs)!==JSON.stringify(cloudDocs)){
+        const ok=confirm("ستحل مستندات السحابة محل المستندات الحالية على هذا الجهاز. هل تريد المتابعة؟");
+        if(!ok)return;
+      }
+      docs=cloudDocs;
       localStorage.setItem(DOC_KEY,JSON.stringify(docs));
+      await queueLocalSave();
       renderDocuments();
       render();
     }
@@ -1301,7 +1342,6 @@ async function loadDocumentsFromCloud(){
     /* Keep local documents when cloud documents cannot be loaded. */
   }
 }
-
 function fillShareCompanies(){const el=document.getElementById("shareCompany");if(!el)return;el.innerHTML=data.companies.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")||'<option value="">لا توجد شركات</option>'}
 function makeShareLink(){const cid=document.getElementById("shareCompany").value,person=document.getElementById("sharePerson").value.trim();if(!cid){toast("اختر شركة");return}const shareToken=(crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random()).replace(/-/g,"");postNoCors("createClientLink",{companyId:cid,shareToken});const url=location.href.split("?")[0]+"?client=1&share="+encodeURIComponent(shareToken)+(person?"&name="+encodeURIComponent(person):"");document.getElementById("shareUrl").value=url;toast("تم إنشاء رابط العميل")}
 function clientJsonp(action,extra={}){return new Promise((resolve,reject)=>{const u=localStorage.getItem(REMOTE_URL_KEY);if(!u)return reject(new Error("missing_url"));const cb="madaClientCb_"+Date.now()+"_"+Math.random().toString(36).slice(2);const script=document.createElement("script");const params=new URLSearchParams({action,callback:cb,...extra});let timer=setTimeout(()=>{cleanup();reject(new Error("timeout"))},15000);function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}window[cb]=(result)=>{cleanup();resolve(result)};script.onerror=()=>{cleanup();reject(new Error("network"))};script.src=u+(u.includes("?")?"&":"?")+params.toString();document.body.appendChild(script)})}
