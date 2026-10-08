@@ -337,7 +337,8 @@ label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5
         <div id="syncMsg" class="muted" style="margin:8px 0"></div>
         <div class="modalfoot">
           <button class="gold" onclick="saveSyncSettings()">حفظ واختبار</button>
-          <button class="secondary" onclick="syncNow()">رفع بيانات الجهاز للسحابة</button>
+          <button class="secondary" onclick="loadDataFromCloud(true)">⬇ تحميل من السحابة</button>
+          <button class="secondary" onclick="syncNow()">⬆ رفع بيانات الجهاز للسحابة</button>
         </div>
         <div class="muted" style="margin-top:8px">بعد ربط الجهاز الأول ورفع البيانات، أدخل نفس الرابط والرمز في أي جهاز آخر، وسيتم تحميل نفس البيانات.</div>
       </div>
@@ -1104,15 +1105,13 @@ async function saveSyncSettings(){
   const u=document.getElementById("apiUrl").value.trim(),t=document.getElementById("apiToken").value.trim(),msg=document.getElementById("syncMsg");
   if(!u||!t){msg.textContent="أدخل الرابط ورمز الربط.";setSyncStatus(false,"غير مربوط");return}
   localStorage.setItem(REMOTE_URL_KEY,u);localStorage.setItem(REMOTE_TOKEN_KEY,t);
-  msg.textContent="جاري اختبار الاتصال...";
+  msg.textContent="جاري اختبار الاتصال فقط...";
   try{
     const j=await jsonpRequest("ping");
     if(j&&j.ok){
       setSyncStatus(true,"متصل بالسحابة");
-      msg.textContent="تم الاتصال. يتم الآن تحميل بيانات السحابة.";
-      const ok=await loadDataFromCloud();
-      if(ok)toast("تم ربط الجهاز وتحميل البيانات");
-      else msg.textContent="تم الاتصال بالخدمة لكن تعذر تحميل البيانات.";
+      msg.textContent="تم الاتصال. لم يتم تغيير بيانات الجهاز.";
+      toast("تم ربط الجهاز بالسحابة — اختر تحميل أو رفع البيانات");
     }else throw new Error(j&&j.error||"فشل");
   }catch(e){
     setSyncStatus(false,"فشل الاتصال");
@@ -1128,12 +1127,26 @@ async function syncDataToCloud(showToast=true){
     if(showToast)toast("تم إرسال البيانات والمستندات إلى Google");
   }
 }
-async function syncNow(){await syncDataToCloud(true)}
-async function loadDataFromCloud(){
+async function syncNow(){
+  if(!localStorage.getItem(REMOTE_URL_KEY)||!localStorage.getItem(REMOTE_TOKEN_KEY)){
+    toast("اربط السحابة أولاً");
+    return false;
+  }
+  await syncDataToCloud(true);
+  return true;
+}
+async function loadDataFromCloud(confirmReplace=false){
   try{
     const j=await jsonpRequest("loadData");
     if(j.ok&&j.data&&Array.isArray(j.data.companies)){
-      data=j.data;
+      const cloudData=j.data;
+      const localCount=Array.isArray(data.companies)?data.companies.length:0;
+      const cloudCount=Array.isArray(cloudData.companies)?cloudData.companies.length:0;
+      if(confirmReplace && localCount>0 && JSON.stringify(data)!==JSON.stringify(cloudData)){
+        const ok=confirm("سيتم استبدال بيانات الجهاز الحالية ببيانات السحابة. إذا كانت بيانات هذا الجهاز هي الأحدث اختر إلغاء ثم استخدم «رفع بيانات الجهاز للسحابة». هل تريد تحميل السحابة؟");
+        if(!ok){document.getElementById("syncMsg").textContent="تم إلغاء تحميل السحابة ولم تتغير بيانات الجهاز.";return false}
+      }
+      data=cloudData;
       data.companies=Array.isArray(data.companies)?data.companies:[];
       data.employees=Array.isArray(data.employees)?data.employees:[];
       data.financial=Array.isArray(data.financial)?data.financial:[];
@@ -1141,11 +1154,13 @@ async function loadDataFromCloud(){
       render();syncEmployeeSelectors();applyPermissions();
       setSyncStatus(true,"متصل بالسحابة");
       await loadDocumentsFromCloud();
+      document.getElementById("syncMsg").textContent="تم تحميل بيانات السحابة بنجاح ("+cloudCount+" شركة).";
       return true;
     }
     throw new Error(j&&j.error||"cloud_load_failed");
   }catch(e){
     setSyncStatus(false,"تعذر تحميل السحابة");
+    document.getElementById("syncMsg").textContent="تعذر تحميل بيانات السحابة.";
     return false;
   }
 }
