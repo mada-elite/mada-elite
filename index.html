@@ -1241,7 +1241,7 @@ function importSyncConfig(e){
   r.readAsText(f);
   e.target.value="";
 }
-async async function syncDataToCloud(showToast=true){
+async function syncDataToCloud(showToast=true){
   const hasConfig=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
   if(!hasConfig){setSyncStatus(false,"غير مربوط");if(showToast)toast("اربط السحابة أولاً");return false}
   normalizeState();
