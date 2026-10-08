@@ -576,10 +576,8 @@ async function saveAllNow(){
   localStorage.setItem(KEY,JSON.stringify(data));
   localStorage.setItem(DOC_KEY,JSON.stringify(docs));
   await queueLocalSave();
-  const hasCloud=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
-  if(hasCloud) await syncDataToCloud(true);
-  else toast("تم حفظ البيانات على هذا الجهاز");
   render();renderDocuments();syncEmployeeSelectors();applyPermissions();
+  toast("تم حفظ البيانات محليًا — لم يتم تغيير السحابة");
 }
 function persist(){
   normalizeState();
@@ -1274,39 +1272,29 @@ async function syncNow(){
   }
   return await syncDataToCloud(true);
 }
-async function loadDataFromCloud(confirmReplace=false){
+async function loadDataFromCloud(confirmReplace=true){
   try{
     const j=await jsonpRequest("loadData");
     if(!(j&&j.ok&&j.data&&Array.isArray(j.data.companies)))throw new Error(j&&j.error||"cloud_load_failed");
-
     const cloudData=j.data;
     const localCount=Array.isArray(data.companies)?data.companies.length:0;
     const cloudCount=Array.isArray(cloudData.companies)?cloudData.companies.length:0;
     const different=JSON.stringify(data)!==JSON.stringify(cloudData);
 
-    // Never allow an empty cloud database to erase local data.
     if(cloudCount===0 && localCount>0 && different){
-      setSyncStatus(true,"السحابة فارغة — لم يتم تغيير بيانات الجهاز");
-      document.getElementById("syncMsg").textContent="السحابة لا تحتوي شركات، لذلك تم منع استبدال بيانات الجهاز الحالية. استخدم «رفع بيانات الجهاز للسحابة» إذا كانت هذه هي البيانات الصحيحة.";
+      setSyncStatus(true,"السحابة فارغة — البيانات المحلية محفوظة");
+      document.getElementById("syncMsg").textContent="السحابة فارغة، لذلك لم يتم حذف بيانات الجهاز.";
+      toast("تم منع حذف البيانات: السحابة فارغة");
       return false;
     }
 
-    // Automatic startup load is read-only when the device already has data.
-    if(!confirmReplace && localCount>0 && different){
-      setSyncStatus(true,"متصل بالسحابة — البيانات المحلية محفوظة");
-      document.getElementById("syncMsg").textContent="توجد بيانات محلية مختلفة؛ لم يتم استبدالها تلقائيًا.";
-      return false;
-    }
-
-    if(confirmReplace && localCount>0 && different){
-      const ok=confirm("سيتم استبدال بيانات الجهاز الحالية ببيانات السحابة. هل تريد المتابعة؟");
-      if(!ok){document.getElementById("syncMsg").textContent="تم إلغاء التحميل ولم تتغير بيانات الجهاز.";return false}
+    if(localCount>0 && different && confirmReplace){
+      const ok=confirm("سيتم استبدال بيانات الجهاز الحالية ببيانات السحابة. البيانات الحالية محفوظة محليًا. هل تريد المتابعة؟");
+      if(!ok){document.getElementById("syncMsg").textContent="تم إلغاء التحميل؛ لم تتغير بيانات الجهاز.";return false}
     }
 
     data=cloudData;
-    data.companies=Array.isArray(data.companies)?data.companies:[];
-    data.employees=Array.isArray(data.employees)?data.employees:[];
-    data.financial=Array.isArray(data.financial)?data.financial:[];
+    normalizeState();
     localStorage.setItem(KEY,JSON.stringify(data));
     await queueLocalSave();
     render();syncEmployeeSelectors();applyPermissions();
@@ -1407,11 +1395,7 @@ async function bootstrapLocalState(){
   document.getElementById("app").style.display="flex";
   await bootstrapLocalState();
   const hasCloud=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
-  if(hasCloud){
-    setSyncStatus(true,"جاري تحميل السحابة...");
-    const ok=await loadDataFromCloud(false);
-    if(!ok)toast("تعذر تحميل السحابة — تم الاحتفاظ بالبيانات المحلية");
-  }
+  if(hasCloud) setSyncStatus(true,"متصل بالسحابة — البيانات المحلية محفوظة");
   render();syncEmployeeSelectors();applyPermissions();
 })();
 </script>
