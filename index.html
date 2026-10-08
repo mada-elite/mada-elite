@@ -338,6 +338,9 @@ label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px;color:#4a5
           <button class="gold" onclick="saveSyncSettings()">حفظ واختبار</button>
           <button class="secondary" onclick="loadDataFromCloud(true)">⬇ تحميل من السحابة</button>
           <button class="secondary" onclick="syncNow()">⬆ رفع بيانات الجهاز للسحابة</button>
+          <button class="secondary" onclick="exportSyncConfig()">📤 تصدير إعداد الربط</button>
+          <button class="secondary" onclick="document.getElementById('syncConfigFile').click()">📥 استيراد إعداد الربط</button>
+          <input id="syncConfigFile" type="file" accept=".json" style="display:none" onchange="importSyncConfig(event)">
         </div>
         <div class="muted" style="margin-top:8px">بعد ربط الجهاز الأول ورفع البيانات، أدخل نفس الرابط والرمز في أي جهاز آخر، وسيتم تحميل نفس البيانات.</div>
       </div>
@@ -1148,6 +1151,40 @@ async function saveSyncSettings(){
   }
 }
 function setSyncStatus(ok,text){const e=document.getElementById("syncStatus");if(!e)return;e.textContent=text;e.className="syncstatus "+(ok?"syncok":"syncbad")}
+function exportSyncConfig(){
+  const u=localStorage.getItem(REMOTE_URL_KEY)||"",t=localStorage.getItem(REMOTE_TOKEN_KEY)||"";
+  if(!u||!t){toast("احفظ إعدادات الربط واختبر الاتصال أولاً");return}
+  const payload={service:"MADA ELITE",type:"sync-config",webAppUrl:u,token:t,createdAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="MADA_ELITE_sync_config.json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast("تم تصدير إعداد الربط — انقله للجهاز الآخر");
+}
+function importSyncConfig(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async()=>{
+    try{
+      const x=JSON.parse(r.result);
+      const u=String(x.webAppUrl||"").trim(),t=String(x.token||"").trim();
+      if(x.type!=="sync-config"||!u||!t)throw new Error("invalid_config");
+      localStorage.setItem(REMOTE_URL_KEY,u);localStorage.setItem(REMOTE_TOKEN_KEY,t);
+      document.getElementById("apiUrl").value=u;
+      document.getElementById("apiToken").value=t;
+      document.getElementById("syncMsg").textContent="تم استيراد الإعداد، جاري اختبار الاتصال...";
+      const j=await jsonpRequest("ping");
+      if(!j||!j.ok)throw new Error("ping_failed");
+      setSyncStatus(true,"متصل بالسحابة");
+      document.getElementById("syncMsg").textContent="تم الربط. اضغط «تحميل من السحابة» لجلب البيانات.";
+      toast("تم ربط الجهاز بنجاح");
+    }catch(err){
+      setSyncStatus(false,"فشل استيراد إعداد الربط");
+      document.getElementById("syncMsg").textContent="تعذر استيراد الإعداد أو الاتصال بالخدمة.";
+    }
+  };
+  r.readAsText(f);
+  e.target.value="";
+}
 async function syncDataToCloud(showToast=true){
   const ok=postNoCors("saveData",{data});
   const docsOk=postNoCors("saveDocuments",{docs});
