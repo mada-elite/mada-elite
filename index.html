@@ -1395,7 +1395,13 @@ async function bootstrapLocalState(){
   document.getElementById("app").style.display="flex";
   await bootstrapLocalState();
   const hasCloud=!!(localStorage.getItem(REMOTE_URL_KEY)&&localStorage.getItem(REMOTE_TOKEN_KEY));
-  if(hasCloud) setSyncStatus(true,"متصل بالسحابة — البيانات المحلية محفوظة");
+  // Safety: only auto-download cloud data when this browser has no company records.
+  // Never overwrite existing local records automatically.
+  if(hasCloud && (!Array.isArray(data.companies) || data.companies.length===0)){
+    await loadDataFromCloud(false);
+  } else if(hasCloud) {
+    setSyncStatus(true,"إعداد السحابة موجود — البيانات المحلية محفوظة");
+  }
   render();syncEmployeeSelectors();applyPermissions();
 })();
 </script>
